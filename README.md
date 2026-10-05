@@ -2,6 +2,8 @@
 
 PS2 Play History Viewer is a React Vite-based web application for parsing and displaying PlayStation 2 game history files. See all your recorded games, cumulative play counts and last played dates alongside optional individual records.
 
+# Try it now at https://ambermemorydoll.github.io/ps2-play-history/!
+
 ## Background
 
 ### What are game history files?
