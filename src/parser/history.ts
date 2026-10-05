@@ -55,10 +55,14 @@ export function parseHistory(
   // else to reasonably check for.
   const bytes = new Uint8Array(buffer);
   if (bytes.length === 0) {
-    throw new Error("Imported file empty");
+    throw new Error(
+      "Unsupported file type. Please check that you have uploaded the correct file(s).",
+    );
   }
   if (bytes.length % ENTRY_SIZE !== 0) {
-    throw new Error("Unexpected imported file size");
+    throw new Error(
+      "Unsupported file type. Please check that you have uploaded the correct file(s).",
+    );
   }
   const entries: PlayHistoryEntry[] = [];
 

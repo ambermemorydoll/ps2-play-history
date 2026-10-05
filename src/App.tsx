@@ -23,6 +23,7 @@ function App() {
   const [isSampleData, setIsSampleData] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [isDatabaseLoading, setIsDatabaseLoading] = useState(false);
 
   async function loadHistoryFiles(files: File[]) {
     setError(null);
@@ -36,7 +37,9 @@ function App() {
     try {
       const allEntries: PlayHistoryEntry[] = [];
 
+      setIsDatabaseLoading(true);
       const gameDatabase = await loadGameDatabase();
+      setIsDatabaseLoading(false);
 
       for (const file of files) {
         const buffer = await file.arrayBuffer();
@@ -49,8 +52,9 @@ function App() {
       setEntries(allEntries);
       setGames(createGameSummaries(allEntries));
     } catch (err) {
+      setIsDatabaseLoading(false);
       console.error(err);
-      setError("Unsupported file. Please try again.");
+      setError(`Error: $err`);
     }
   }
 
@@ -81,7 +85,7 @@ function App() {
           );
 
           if (!response.ok) {
-            throw new Error(`Failed to load ${fileName}`);
+            throw new Error(`Failed to load file: ${fileName}`);
           }
 
           const blob = await response.blob();
@@ -94,7 +98,9 @@ function App() {
       await loadHistoryFiles(files);
     } catch (err) {
       console.error(err);
-      setError("Failed to load sample data");
+      setError(
+        "Failed to load sample data. Please check your internet connection.",
+      );
     }
   }
 
@@ -183,8 +189,7 @@ function App() {
   return (
     // HTML page layout
     <main>
-      <h1>PS2 Play History Viewer</h1>
-
+      <h1>PS2 Play History Explorer</h1>
       <div>
         <p>
           Import any number of <code>history</code> or <code>history.old</code>{" "}
@@ -195,6 +200,17 @@ function App() {
           <input type="file" multiple onChange={handleFiles} />
         </div>
 
+        {isDatabaseLoading && (
+          <div>
+            <p>
+              <strong>
+                Loading game title database. If this message remains for more
+                than a few moments, try reloading the page.
+              </strong>
+            </p>
+          </div>
+        )}
+
         {error && <p>{error}</p>}
 
         <br />
@@ -203,15 +219,12 @@ function App() {
           How to obtain history file?
         </button>
       </div>
-
       <br />
-
       {entries.length === 0 && (
         <button type="button" onClick={handleSampleData}>
           Try with sample data
         </button>
       )}
-
       {games.length > 0 && (
         <>
           {isSampleData && (
@@ -363,7 +376,6 @@ function App() {
           )}
         </>
       )}
-
       {selectedGameId && (
         <section>
           <br />
@@ -414,7 +426,6 @@ function App() {
           </table>
         </section>
       )}
-
       {showTutorial && (
         <div className="tutorial-overlay">
           <div className="tutorial-modal">
@@ -436,7 +447,7 @@ function App() {
 
             <img
               className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step1.jpeg`}
+              src={`${import.meta.env.BASE_URL}tutorial/Step1.webp`}
             />
 
             <p>
@@ -478,7 +489,7 @@ function App() {
 
             <img
               className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step2.jpeg`}
+              src={`${import.meta.env.BASE_URL}tutorial/Step2.webp`}
             />
 
             <p>
@@ -496,7 +507,7 @@ function App() {
 
             <img
               className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step3.jpeg`}
+              src={`${import.meta.env.BASE_URL}tutorial/Step3.webp`}
             />
 
             <br />
@@ -525,7 +536,7 @@ function App() {
 
             <img
               className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step5.jpeg`}
+              src={`${import.meta.env.BASE_URL}tutorial/Step5.webp`}
             />
 
             <p>
@@ -536,7 +547,7 @@ function App() {
 
             <img
               className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step6.jpeg`}
+              src={`${import.meta.env.BASE_URL}tutorial/Step6.webp`}
             />
 
             <p>
@@ -547,7 +558,7 @@ function App() {
 
             <img
               className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step7.jpeg`}
+              src={`${import.meta.env.BASE_URL}tutorial/Step7.webp`}
             />
 
             <p>
@@ -573,7 +584,6 @@ function App() {
           </div>
         </div>
       )}
-
       {showCredits && (
         <div className="tutorial-overlay">
           <div className="tutorial-modal">
@@ -687,10 +697,8 @@ function App() {
           </div>
         </div>
       )}
-
       <br />
       <br />
-
       <div>
         <div className="footer-buttons">
           <button type="button" onClick={() => setShowCredits(true)}>
@@ -707,7 +715,6 @@ function App() {
           </button>
         </div>
       </div>
-
       <br />
     </main>
   );

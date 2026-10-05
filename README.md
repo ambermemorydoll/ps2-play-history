@@ -1,6 +1,6 @@
-# PS2 Play History Viewer
+# PS2 Play History Explorer
 
-PS2 Play History Viewer is a React Vite-based web application for parsing and displaying PlayStation 2 game history files. See all your recorded games, cumulative play counts and last played dates alongside optional individual records.
+PS2 Play History Explorer is a React Vite-based web application for parsing and displaying PlayStation 2 game history files. See all your recorded games, cumulative play counts and last played dates alongside optional individual records.
 
 # Try it now at https://ambermemorydoll.github.io/ps2-play-history/!
 
@@ -22,7 +22,7 @@ The first 11 bytes indicate the game ID:
 
 This internal format is slightly different to how it's printed on the game disc (SCES-54749) so text replacement is necessary to match the ID to a game title database later.
 
-*Technically, 16 bytes are reserved for the game ID - but the only ID I've come across that deviates from the typical format is `DVDVIDEO`. It's possible that some applications (such as the Japan-exclusive [PSBBN](https://en.wikipedia.org/wiki/PlayStation_Broadband_Navigator) or even homebrew might make use of IDs in even more formats, but I'm unable to verify personally.*
+_Technically, 16 bytes are reserved for the game ID - but the only ID I've come across that deviates from the typical format is `DVDVIDEO`. It's possible that some applications (such as the Japan-exclusive [PSBBN](https://en.wikipedia.org/wiki/PlayStation_Broadband_Navigator) or even homebrew might make use of IDs in even more formats, but I'm unable to verify personally._
 
 After the game ID, the 17th byte contains a single integer that caps at 63 per-record:
 
@@ -36,7 +36,7 @@ After another padding byte, the 21st and 22nd bytes (`1713`) indicate the date i
 - `const month = (value >> 5) & 0x0f;` returns 9 (September), but it seemed to be one too high (??) so I subtracted one to decode it as 8 (August)
 - `const day = value & 0x1f;` returns 22
 
-There's some logic that moves entries between `history` and `history.old` but I wasn't able to discern how or why (testing this on real hardware is incredibly tedious). This  combines all found records for each game so the distinction shouldn't matter, but the numbers in the 'Records' column are clickable if you'd like to see the individual records.
+There's some logic that moves entries between `history` and `history.old` but I wasn't able to discern how or why (testing this on real hardware is incredibly tedious). This app combines all found records for each game so the distinction shouldn't matter, but the numbers in the 'Records' column are clickable if you'd like to see the individual records.
 
 ### What are the limitations of this data?
 
@@ -46,16 +46,18 @@ There's some logic that moves entries between `history` and `history.old` but I 
 - **Some homebrew and backup loaders do not respect this file.** [Open-PS2-Loader](https://github.com/ps2homebrew/Open-PS2-Loader) does, [DKWDRV](https://github.com/DKWDRV/DKWDRV) does not. My own sample data is missing a lot of PS1 play records as I have to use DKWDRV's component fix option to have them display on my TV.
 
 ## Features
+
 - **Multi-file import:** open any combination of history files to be processed simultaneously. Multiple regions, multiple memory cards and both `history`/`history.old` files can be imported together.
 - **Game ID and title matching:** Retrieves game title where possible.
 - **Column sorting:** Sort by title, ID, cumulative play count, last played date, or number of records.
 - **Individual record view:** See source file, dates and play counts for all records processed.
 - **Automatic light and dark mode support:** Please consider checking out the dark mode! It's PS2-themed :)
 - **Privacy guaranteed:** All processing happens locally. No files are sent to a server.
-- **File location tutorial:** Learn how to obtain the history file from your own memory card, *or:*
+- **File location tutorial:** Learn how to obtain the history file from your own memory card, _or:_
 - **Sample data import:** Click the `Try with sample data` button to test the app with my own memory card data. This data was a surprise even to me, as my memory card has been in use by its previous owners longer than I've been alive!
 
 ## Credits
+
 **Special thanks to:**
 
 - [sync-on-luma (y)](https://www.youtube.com/@sync-on-luma) for his excellent [video on reverse-engineering the history files](https://www.youtube.com/watch?v=hjekB5x8uXo) of the PS2.

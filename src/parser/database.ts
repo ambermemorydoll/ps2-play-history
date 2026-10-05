@@ -2,7 +2,9 @@ export async function loadGameDatabase(): Promise<Map<string, string>> {
   const response = await fetch(`${import.meta.env.BASE_URL}/games.csv`);
 
   if (!response.ok) {
-    throw new Error("Failed to load game title database");
+    throw new Error(
+      "Failed to load game title database. Please check your internet connection.",
+    );
   }
 
   const text = await response.text();
