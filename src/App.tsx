@@ -76,7 +76,9 @@ function App() {
 
       const files = await Promise.all(
         fileNames.map(async (fileName) => {
-          const response = await fetch(`/sample/${fileName}`);
+          const response = await fetch(
+            `${import.meta.env.BASE_URL}sample/${fileName}`,
+          );
 
           if (!response.ok) {
             throw new Error(`Failed to load ${fileName}`);
@@ -432,7 +434,10 @@ function App() {
 
             <br />
 
-            <img className="tutorial-screenshot" src="/tutorial/Step1.jpeg" />
+            <img
+              className="tutorial-screenshot"
+              src={`${import.meta.env.BASE_URL}tutorial/Step1.jpeg`}
+            />
 
             <p>
               If you have a FreeMCBoot memory card, you should have a variant of
@@ -471,7 +476,10 @@ function App() {
               </strong>
             </p>
 
-            <img className="tutorial-screenshot" src="/tutorial/Step2.jpeg" />
+            <img
+              className="tutorial-screenshot"
+              src={`${import.meta.env.BASE_URL}tutorial/Step2.jpeg`}
+            />
 
             <p>
               After entering one of your memory cards with Circle, you'll see a
@@ -486,7 +494,10 @@ function App() {
               <li>China: BCDATA-SYSTEM (untested, format may differ)</li>
             </p>
 
-            <img className="tutorial-screenshot" src="/tutorial/Step3.jpeg" />
+            <img
+              className="tutorial-screenshot"
+              src={`${import.meta.env.BASE_URL}tutorial/Step3.jpeg`}
+            />
 
             <br />
 
@@ -512,7 +523,10 @@ function App() {
               the Copy option.
             </p>
 
-            <img className="tutorial-screenshot" src="/tutorial/Step5.jpeg" />
+            <img
+              className="tutorial-screenshot"
+              src={`${import.meta.env.BASE_URL}tutorial/Step5.jpeg`}
+            />
 
             <p>
               With both files copied, repeatedly press Triangle to go back until
@@ -520,7 +534,10 @@ function App() {
               device and navigate to <code>mass:/</code> instead.
             </p>
 
-            <img className="tutorial-screenshot" src="/tutorial/Step6.jpeg" />
+            <img
+              className="tutorial-screenshot"
+              src={`${import.meta.env.BASE_URL}tutorial/Step6.jpeg`}
+            />
 
             <p>
               The contents of your USB device will now be displayed. Pick
@@ -528,7 +545,10 @@ function App() {
               open the menu again, and this time select Paste.
             </p>
 
-            <img className="tutorial-screenshot" src="/tutorial/Step7.jpeg" />
+            <img
+              className="tutorial-screenshot"
+              src={`${import.meta.env.BASE_URL}tutorial/Step7.jpeg`}
+            />
 
             <p>
               The files will now be stored on your USB device. Power down your
