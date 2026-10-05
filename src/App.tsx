@@ -238,7 +238,8 @@ function App() {
                 Amber
               </a>
               's own memory card. It's been in use since 2002, in the hands of
-              3-4 different owners!
+              3-4 different owners! Import your own file to clear the displayed
+              data.
             </p>
           )}
           <div>
@@ -249,7 +250,7 @@ function App() {
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Game name or ID"
+              placeholder="Game title or ID"
             />
           </div>
           <h2>
@@ -445,6 +446,16 @@ function App() {
 
             <br />
 
+            <p>
+              <i>
+                If you already know what you're doing: the files you're looking
+                for are <code>history</code> and <code>history.old</code> inside{" "}
+                <code>BxDATA-SYSTEM</code>.
+              </i>
+            </p>
+
+            <br />
+
             <img
               className="tutorial-screenshot"
               src={`${import.meta.env.BASE_URL}tutorial/Step1.webp`}
@@ -499,10 +510,18 @@ function App() {
             </p>
             <br />
             <p>
-              <li>Asia and the Americas: BADATA-SYSTEM</li>
-              <li>Europe: BEDATA-SYSTEM</li>
-              <li>Japan: BIDATA-SYSTEM</li>
-              <li>China: BCDATA-SYSTEM (untested, format may differ)</li>
+              <li>
+                Asia and the Americas: <code>BADATA-SYSTEM</code>
+              </li>
+              <li>
+                Europe: <code>BEDATA-SYSTEM</code>
+              </li>
+              <li>
+                Japan: <code>BIDATA-SYSTEM</code>
+              </li>
+              <li>
+                China: <code>BCDATA-SYSTEM</code> (untested, format may differ)
+              </li>
             </p>
 
             <img
