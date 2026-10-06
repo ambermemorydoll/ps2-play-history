@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { createGameSummaries, type GameSummary } from "./data/statistics";
+import {
+  createGameSummaries,
+  createOverallSummary,
+  type GameSummary,
+  type OverallSummary,
+} from "./data/statistics";
 import { loadGameDatabase } from "./parser/database";
 import { parseHistory, type PlayHistoryEntry } from "./parser/history";
 import "./App.css";
@@ -24,6 +29,7 @@ function App() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
   const [isDatabaseLoading, setIsDatabaseLoading] = useState(false);
+  const [summary, setSummary] = useState<OverallSummary | null>(null);
 
   async function loadHistoryFiles(files: File[]) {
     setError(null);
@@ -42,6 +48,14 @@ function App() {
       setIsDatabaseLoading(false);
 
       for (const file of files) {
+        // Hardcoded skip for .sys files, as icon.sys is present by default
+        // in the same folder as the history files and easy to upload by
+        // accident
+        if (file.name.endsWith(".sys")) {
+          console.log("Skipped .sys file");
+          continue;
+        }
+
         const buffer = await file.arrayBuffer();
 
         const parsed = parseHistory(buffer, file.name, gameDatabase);
@@ -51,10 +65,11 @@ function App() {
 
       setEntries(allEntries);
       setGames(createGameSummaries(allEntries));
+      setSummary(createOverallSummary(allEntries));
     } catch (err) {
       setIsDatabaseLoading(false);
       console.error(err);
-      setError(`Error: $err`);
+      setError(`${String(err).replace(/Error:/, "")}`);
     }
   }
 
@@ -242,6 +257,44 @@ function App() {
               data.
             </p>
           )}
+
+          {summary && (
+            <section className="summary">
+              <div>
+                {summary.records} records processed{" "}
+                {summary.recordsSkipped > 0
+                  ? `(${summary.recordsSkipped} invalid)`
+                  : ""}
+              </div>
+              <div>{summary.uniqueGames} unique games played</div>
+              <div>{summary.sessions} tracked play sessions</div>
+              <div>
+                Earliest record:{" "}
+                {summary.earliestRecord
+                  ? summary.earliestRecord.toISOString().slice(0, 10)
+                  : "Unknown"}
+              </div>
+              <div>
+                Latest record:{" "}
+                {summary.latestRecord
+                  ? summary.latestRecord.toISOString().slice(0, 10)
+                  : "Unknown"}
+              </div>
+              <div>
+                Timespan:{" "}
+                {summary.timespan.years > 0
+                  ? `${summary.timespan.years} years, `
+                  : ""}
+                {summary.timespan.months > 0 || summary.timespan.years > 0
+                  ? `${summary.timespan.months} months, `
+                  : ""}
+                {`${summary.timespan.days} days`}
+              </div>
+            </section>
+          )}
+
+          <br />
+
           <div>
             <label htmlFor="game-search">Search games:</label>
 

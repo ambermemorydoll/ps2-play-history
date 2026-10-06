@@ -22,7 +22,7 @@ The first 11 bytes indicate the game ID:
 
 This internal format is slightly different to how it's printed on the game disc (SCES-54749) so text replacement is necessary to match the ID to a game title database later.
 
-_Technically, 16 bytes are reserved for the game ID - but the only ID I've come across that deviates from the typical format is `DVDVIDEO`. It's possible that some applications (such as the Japan-exclusive [PSBBN](https://en.wikipedia.org/wiki/PlayStation_Broadband_Navigator) or even homebrew might make use of IDs in even more formats, but I'm unable to verify personally._
+_Technically, 16 bytes are reserved for the game ID - though the only ID I've come across that deviates from the typical format is `DVDVIDEO`. It's possible that some applications (such as the obscure [PS2 Linux distribution](https://en.wikipedia.org/wiki/Linux_for_PlayStation_2) and the Japan-exclusive [PSBBN](https://en.wikipedia.org/wiki/PlayStation_Broadband_Navigator)) or even homebrew might make use of IDs in even more formats, but I'm unable to verify personally._
 
 After the game ID, the 17th byte contains a single integer that caps at 63 per-record:
 
@@ -51,6 +51,7 @@ There's some logic that moves entries between `history` and `history.old` but I 
 - **Game ID and title matching:** Retrieves game title where possible, _or:_
 - **Manual Redump lookup links:** Search potential matches when database retrieval isn't possible.
 - **Column sorting:** Sort by title, ID, cumulative play count, last played date, or number of records.
+- **Summary view:** Record counts, unique games played, tracked play sessions, earliest and latest known dates, all in one place.
 - **Individual record view:** See source file, dates and play counts for all records processed.
 - **Automatic light and dark mode support:** Please consider checking out the dark mode! It's PS2-themed :)
 - **Privacy guaranteed:** All processing happens locally. No files are sent to a server.

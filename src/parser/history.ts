@@ -16,12 +16,12 @@ function decodeGameId(entry: Uint8Array): string {
   let gameId = decoder.decode(entry.slice(0, 11));
 
   // Convert internal title ID to match format as used on game discs.
-  // Also substistute unwanted characters, necessary to avoid NULL
-  // characters in IDs shorter than 12 bytes (e.g. DVDVIDEO).
+  // Also strip unwanted characters, necessary to avoid NULL
+  // bytes in IDs shorter than 12 bytes (e.g. DVDVIDEO).
   gameId = gameId
     .replace(/_/g, "-")
     .replace(/\./g, "")
-    .replace(/[\x00-\x1F\x7F]/g, "");
+    .replace(/[^a-zA-Z0-9\._\-:]/g, "");
 
   return gameId;
 }
