@@ -7,7 +7,10 @@ export interface GameSummary {
   lastPlayed: Date | null;
   records: number;
   hasMaxPlayCount: boolean;
+  lookupUrl: URL;
 }
+
+const BASE_REDUMP_URL = "http://redump.org/discs/quicksearch/";
 
 export function createGameSummaries(
   entries: PlayHistoryEntry[],
@@ -18,6 +21,9 @@ export function createGameSummaries(
     const existing = games.get(entry.gameId);
 
     if (!existing) {
+      const redumpLookupUrl = new URL(BASE_REDUMP_URL);
+      redumpLookupUrl.pathname += entry.gameId.toLowerCase();
+
       games.set(entry.gameId, {
         gameId: entry.gameId,
         gameName: entry.gameName,
@@ -25,6 +31,7 @@ export function createGameSummaries(
         lastPlayed: isImpossibleDate(entry.date) ? null : entry.date,
         records: 1,
         hasMaxPlayCount: isMaxPlayCount(entry.playCount),
+        lookupUrl: redumpLookupUrl,
       });
 
       continue;

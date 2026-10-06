@@ -385,8 +385,20 @@ function App() {
             {games.find((game) => game.gameId === selectedGameId)?.gameName}
           </h2>
           <p>
-            <i>{selectedGameId}</i>
+            <i>
+              {selectedGameId}{" "}
+              <a
+                href={games
+                  .find((game) => game.gameId === selectedGameId)
+                  ?.lookupUrl.toString()}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                (Redump Lookup)
+              </a>
+            </i>
           </p>
+          <p></p>
 
           <br />
 
