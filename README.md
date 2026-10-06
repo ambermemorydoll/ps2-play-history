@@ -48,7 +48,8 @@ There's some logic that moves entries between `history` and `history.old` but I 
 ## Features
 
 - **Multi-file import:** open any combination of history files to be processed simultaneously. Multiple regions, multiple memory cards and both `history`/`history.old` files can be imported together.
-- **Game ID and title matching:** Retrieves game title where possible.
+- **Game ID and title matching:** Retrieves game title where possible, _or:_
+- **Manual Redump lookup links:** Search potential matches when database retrieval isn't possible.
 - **Column sorting:** Sort by title, ID, cumulative play count, last played date, or number of records.
 - **Individual record view:** See source file, dates and play counts for all records processed.
 - **Automatic light and dark mode support:** Please consider checking out the dark mode! It's PS2-themed :)

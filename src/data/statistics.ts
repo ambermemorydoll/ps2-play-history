@@ -21,9 +21,6 @@ export function createGameSummaries(
     const existing = games.get(entry.gameId);
 
     if (!existing) {
-      const redumpLookupUrl = new URL(BASE_REDUMP_URL);
-      redumpLookupUrl.pathname += entry.gameId.toLowerCase();
-
       games.set(entry.gameId, {
         gameId: entry.gameId,
         gameName: entry.gameName,
@@ -31,7 +28,7 @@ export function createGameSummaries(
         lastPlayed: isImpossibleDate(entry.date) ? null : entry.date,
         records: 1,
         hasMaxPlayCount: isMaxPlayCount(entry.playCount),
-        lookupUrl: redumpLookupUrl,
+        lookupUrl: new URL(BASE_REDUMP_URL + entry.gameId.toLowerCase()),
       });
 
       continue;
