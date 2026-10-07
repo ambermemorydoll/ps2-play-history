@@ -1,13 +1,17 @@
 import { useState } from "react";
+import { createShareSummary } from "./data/share";
 import {
   createGameSummaries,
   createOverallSummary,
+  findTopGames,
   type GameSummary,
   type OverallSummary,
 } from "./data/statistics";
 import { loadGameDatabase } from "./parser/database";
 import { parseHistory, type PlayHistoryEntry } from "./parser/history";
 import "./App.css";
+
+const APP_URL = "https://ambermemorydoll.github.io/ps2-play-history/";
 
 function App() {
   // States
@@ -30,6 +34,9 @@ function App() {
   const [showCredits, setShowCredits] = useState(false);
   const [isDatabaseLoading, setIsDatabaseLoading] = useState(false);
   const [summary, setSummary] = useState<OverallSummary | null>(null);
+  const [showShare, setShowShare] = useState(false);
+  const [shareText, setShareText] = useState<string | null>(null);
+  const [recentlyCopied, setRecentlyCopied] = useState(false);
 
   async function loadHistoryFiles(files: File[]) {
     setError(null);
@@ -119,6 +126,11 @@ function App() {
     }
   }
 
+  async function openShareWindow() {
+    setShareText(retrieveShareText);
+    setShowShare(true);
+  }
+
   // Handles sort mode changes
   function handleSort(
     column:
@@ -145,6 +157,44 @@ function App() {
 
     setSortColumn(column);
     setSortDirection(defaultDirections[column]);
+  }
+
+  // Generates and returns share text using function imported from statistics.ts
+  function retrieveShareText(): string | null {
+    let topGames = findTopGames(games);
+    if (summary && topGames) {
+      return createShareSummary(summary, topGames);
+    } else {
+      return null;
+    }
+  }
+
+  // Formats existing shareText for displaying in the preview box
+  function handleShareDisplay(): string {
+    return shareText
+      ? `${shareText} \n\nvia ${APP_URL}`
+      : "Unable to generate share text";
+  }
+
+  // Copies existing shareText to clipboard
+  // Share options are already hidden if shareText is null, so no need to check here
+  async function handleShareCopy() {
+    try {
+      await navigator.clipboard.writeText(shareText + `\n\nvia ${APP_URL}`);
+      setRecentlyCopied(true);
+      setTimeout(() => {
+        setRecentlyCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.log(`Couldn't copy share summary: ${err}`);
+    }
+  }
+
+  // Builds Twitter link using existing shareText and opens in browser
+  // Share options are already hidden if shareText is null, so no need to check here
+  function handleShareTwitter() {
+    let shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText + "\n\nvia")}&url=${encodeURIComponent(APP_URL)}`;
+    window.open(shareLink);
   }
 
   // Handles filtering changes when search bar contents are modified
@@ -290,6 +340,11 @@ function App() {
                   : ""}
                 {`${summary.timespan.days} days`}
               </div>
+              {!isSampleData && summary.uniqueGames > 0 && (
+                <button type="button" onClick={openShareWindow}>
+                  Share
+                </button>
+              )}
             </section>
           )}
 
@@ -381,11 +436,12 @@ function App() {
                         </td>
                         <td>{game.gameId}</td>
                         <td>
-                          {game.playCount}
-                          {game.hasMaxPlayCount && (
+                          {game.hasMaxPlayCount ? (
                             <span title="One or more records has reached its maximum value.">
-                              *
+                              {game.playCount}+*
                             </span>
+                          ) : (
+                            game.playCount
                           )}
                         </td>
                         <td>
@@ -414,7 +470,7 @@ function App() {
                 <i>
                   * denotes a game with one or more records that have reached
                   the PS2's maximum play count value of 63. The true number of
-                  game launches may exceed this number.
+                  game launches likely exceeds this number.
                 </i>
               </p>
               <br />
@@ -475,14 +531,12 @@ function App() {
                   <tr key={`${entry.sourceFile}-${index}`}>
                     <td>{entry.date.toISOString().slice(0, 10)}</td>
                     <td>
-                      {entry.playCount}
-                      {entry.playCount === 63 && (
-                        <span
-                          className="play-count-warning"
-                          title="This value caps at 63 on a firmware level. The true number of game launches may exceed this number."
-                        >
-                          *
+                      {entry.playCount === 63 ? (
+                        <span title="This value caps at 63 on a firmware level. The true number of game launches likely exceeds this number.">
+                          {entry.playCount}+*
                         </span>
+                      ) : (
+                        entry.playCount
                       )}
                     </td>
                     <td>{entry.sourceFile}</td>
@@ -490,6 +544,13 @@ function App() {
                 ))}
             </tbody>
           </table>
+          <p>
+            <i>
+              * denotes a record that has reached the PS2's maximum play count
+              value of 63. The true number of game launches likely exceeds this
+              number.
+            </i>
+          </p>
         </section>
       )}
       {showTutorial && (
@@ -781,18 +842,47 @@ function App() {
           </div>
         </div>
       )}
+      {showShare && (
+        <div className="tutorial-overlay">
+          <div className="tutorial-modal">
+            <p>
+              <strong>Share</strong>
+            </p>
+
+            <p className="share-preview">{handleShareDisplay()}</p>
+
+            {shareText && (
+              <div className="button-row share-buttons">
+                <button type="button" onClick={handleShareCopy}>
+                  {recentlyCopied ? "Copied!" : "Copy to Clipboard"}
+                </button>
+                <button type="button" onClick={handleShareTwitter}>
+                  Share to X
+                </button>
+              </div>
+            )}
+
+            <br />
+
+            <button type="button" onClick={() => setShowShare(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <br />
       <br />
       <div>
-        <div className="footer-buttons">
+        <div className="button-row footer-buttons">
           <button type="button" onClick={() => setShowCredits(true)}>
             Credits
           </button>
           <button
             type="button"
             onClick={() => {
-              window.location.href =
-                "https://github.com/ambermemorydoll/ps2-play-history";
+              window.open(
+                "https://github.com/ambermemorydoll/ps2-play-history",
+              );
             }}
           >
             GitHub

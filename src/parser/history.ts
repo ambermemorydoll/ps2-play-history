@@ -75,7 +75,7 @@ export function parseHistory(
     const entry = bytes.slice(offset, offset + ENTRY_SIZE);
 
     const gameId = decodeGameId(entry);
-    const gameName = gameDatabase.get(gameId) ?? gameId;
+    const gameName = gameDatabase.get(gameId) ?? `Unknown (${gameId})`;
     const playCount = decodePlayCount(entry);
     const date = decodeTimestamp(entry);
 

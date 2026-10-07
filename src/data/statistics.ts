@@ -21,6 +21,8 @@ export interface OverallSummary {
 }
 
 const BASE_REDUMP_URL = "http://redump.org/discs/quicksearch/";
+const NON_GAME_IDS = new Set(["DVDVIDEO"]);
+const TOP_GAME_COUNT = 3;
 
 export function createGameSummaries(
   entries: PlayHistoryEntry[],
@@ -111,6 +113,26 @@ export function createOverallSummary(
     latestRecord: latestDate,
     timespan: timespan,
   };
+}
+
+// Returns an array of the top games by play count
+export function findTopGames(games: GameSummary[]): GameSummary[] {
+  // Filter out games with non-game IDs (e.g. DVDVIDEO) from the potential games to sort
+  const filteredGames = [...games].filter(
+    (game) => !NON_GAME_IDS.has(game.gameId),
+  );
+
+  // Check whether the user has played enough actual games to pick a top three.
+  // If they haven't, include the 'non-games' again to avoid inconsistencies
+  // (e.g. 3 games played, only 2 appear in top 3 games).
+  const gamesToSort =
+    filteredGames.length >= TOP_GAME_COUNT ? filteredGames : games;
+
+  const sortedGames = [...gamesToSort].sort(
+    (a, b) => b.playCount - a.playCount,
+  );
+
+  return sortedGames.slice(0, TOP_GAME_COUNT);
 }
 
 // The history file has a hard limit of 63 play count per record. If this value has been reached by any record,

@@ -52,6 +52,7 @@ There's some logic that moves entries between `history` and `history.old` but I 
 - **Manual Redump lookup links:** Search potential matches when database retrieval isn't possible.
 - **Column sorting:** Sort by title, ID, cumulative play count, last played date, or number of records.
 - **Summary view:** Record counts, unique games played, tracked play sessions, earliest and latest known dates, all in one place.
+- **Summary sharing:** Show off your gameplay habits and favourite titles with social media sharing options.
 - **Individual record view:** See source file, dates and play counts for all records processed.
 - **Automatic light and dark mode support:** Please consider checking out the dark mode! It's PS2-themed :)
 - **Privacy guaranteed:** All processing happens locally. No files are sent to a server.
