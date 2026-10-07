@@ -70,6 +70,7 @@ td:last-child button:hover {
   padding: 0.75rem 1rem;
   border: 1px solid currentColor;
   border-radius: 4px;
+  overflow-x: auto;
   text-align: left;
   white-space: pre-line;
 }
@@ -137,4 +138,10 @@ input[type="file"] {
 
 .share-buttons button {
   min-width: 140px;
+}
+
+@media screen and (min-width: 481px) {
+  .hide-on-desktop {
+    display: none;
+  }
 }

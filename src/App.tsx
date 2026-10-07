@@ -466,22 +466,24 @@ function App() {
                   </tbody>
                 </table>
               </div>
-              <p>
-                <i>
-                  * denotes a game with one or more records that have reached
-                  the PS2's maximum play count value of 63. The true number of
-                  game launches likely exceeds this number.
-                </i>
-              </p>
-              <br />
-              <p>
-                <i>
-                  ** denotes a game with records reporting a date prior to the
-                  PS2's launch, which is likely indicative of a dead clock
-                  battery.
-                </i>
-              </p>
-              <br />
+              <div className="hide-on-desktop">
+                <p>
+                  <i>
+                    * denotes a game with one or more records that have reached
+                    the PS2's maximum play count value of 63. The true number of
+                    game launches likely exceeds this number.
+                  </i>
+                </p>
+                <br />
+                <p>
+                  <i>
+                    ** denotes a game with records reporting a date prior to the
+                    PS2's launch, which is likely indicative of a dead clock
+                    battery.
+                  </i>
+                </p>
+                <br />
+              </div>
             </>
           )}
         </>
@@ -544,13 +546,15 @@ function App() {
                 ))}
             </tbody>
           </table>
-          <p>
-            <i>
-              * denotes a record that has reached the PS2's maximum play count
-              value of 63. The true number of game launches likely exceeds this
-              number.
-            </i>
-          </p>
+          <div className="hide-on-desktop">
+            <p>
+              <i>
+                * denotes a record that has reached the PS2's maximum play count
+                value of 63. The true number of game launches likely exceeds
+                this number.
+              </i>
+            </p>
+          </div>
         </section>
       )}
       {showTutorial && (
