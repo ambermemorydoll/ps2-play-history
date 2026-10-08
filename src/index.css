@@ -1,9 +1,10 @@
 :root {
-  --text: #565658;
+  --text: #15101D;
   --text-h: #000000;
   --bg: #FDFDFD;
   --border: #AEAEB0;
   --code-bg: #6FB8FE;
+  --button: #529FFE;
   --accent: #3A5BA8;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
@@ -37,6 +38,7 @@
     --bg: #15101D;
     --border: #529FFE;
     --code-bg: #173064;
+    --button: #173064;
     --accent: #74ADDD;
     --accent-bg: rgba(192, 132, 252, 0.15);
     --accent-border: rgba(192, 132, 252, 0.5);

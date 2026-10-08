@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createShareSummary } from "./data/share";
+import { createShareSummary, generateShareImage } from "./data/share";
 import {
   createGameSummaries,
   createOverallSummary,
@@ -37,9 +37,15 @@ function App() {
   const [showShare, setShowShare] = useState(false);
   const [shareText, setShareText] = useState<string | null>(null);
   const [recentlyCopied, setRecentlyCopied] = useState(false);
+  const [shareImageFile, setShareImageFile] = useState<File | null>(null); // Image as .png file, used for downloading and sharing
+  const [shareImageUrl, setShareImageUrl] = useState<string | null>(null); // Image as link to local .png file, used for preview and downloading
+  const [shareTab, setShareTab] = useState<number>(0); // Which share tab is in use
+  const [shareImagePossible, setShareImagePossible] = useState(false); // Whether the Share Image button should be displayed
 
   async function loadHistoryFiles(files: File[]) {
     setError(null);
+    setShareImageFile(null);
+    setShareImageUrl(null);
 
     if (files.length === 0) {
       return;
@@ -126,11 +132,6 @@ function App() {
     }
   }
 
-  async function openShareWindow() {
-    setShareText(retrieveShareText);
-    setShowShare(true);
-  }
-
   // Handles sort mode changes
   function handleSort(
     column:
@@ -159,9 +160,78 @@ function App() {
     setSortDirection(defaultDirections[column]);
   }
 
-  // Generates and returns share text using function imported from statistics.ts
-  function retrieveShareText(): string | null {
+  // ---------- Universal sharing functions ----------
+
+  async function openShareWindow() {
     let topGames = findTopGames(games);
+
+    // Generate and store share summary text
+    setShareText(retrieveShareText(topGames));
+
+    if (summary) {
+      // Show the share window, but hide share image button until confirmed ready
+      setShowShare(true);
+      setShareImagePossible(false);
+
+      const shareImageBlob = await generateShareImage(summary, topGames);
+
+      if (shareImageBlob) {
+        // Generate saveable file from image blob for downloading
+        const imageFile = createShareImageFile(shareImageBlob);
+        setShareImageFile(imageFile);
+
+        /*Determine whether image can be shared
+        (Why is navigator.canShare() not available without HTTPS? I treated it
+        as a check whether sharing was available (assuming HTTP contexts would
+        just return false), but got null instead, which was a huge headache to
+        troubleshoot on mobile...)*/
+        setShareImagePossible(
+          navigator.canShare
+            ? imageFile !== null && navigator.canShare({ files: [imageFile] })
+            : false,
+        );
+
+        // Make image URL for preview display in the Share window
+        const imageUrl = URL.createObjectURL(shareImageBlob);
+        setShareImageUrl(imageUrl);
+      }
+    }
+  }
+
+  // --------- Image sharing functions, in order of operation ----------
+
+  // Creates a .png file from raw image data
+  function createShareImageFile(imageBlob: Blob): File {
+    const imageFile = new File([imageBlob], "ps2-play-history.png", {
+      type: "image/png",
+    });
+    return imageFile;
+  }
+
+  // Opens a direct image link in a new tab. I don't think there's any way to suggest a browser to download
+  // an image instead of displaying it?
+  function downloadShareImage() {
+    if (shareImageUrl) {
+      window.open(shareImageUrl);
+    } else {
+      throw new Error("No image available to download");
+    }
+  }
+
+  // Opens the device's native share dialog and passes image file as .png
+  function openImageShareDialog() {
+    if (shareImageFile) {
+      // I hope this works. navigator.share() only works over HTTPS, so I can't test until after deploying.
+      navigator.share({ files: [shareImageFile] });
+    } else {
+      throw new Error("No image available to share");
+    }
+  }
+
+  // ---------- Text sharing functions, in order of operation ----------
+
+  // Generates and returns share text using function imported from statistics.ts
+  function retrieveShareText(topGames: GameSummary[]): string | null {
     if (summary && topGames) {
       return createShareSummary(summary, topGames);
     } else {
@@ -178,9 +248,10 @@ function App() {
 
   // Copies existing shareText to clipboard
   // Share options are already hidden if shareText is null, so no need to check here
-  async function handleShareCopy() {
+  async function handleShareTextCopy() {
     try {
       await navigator.clipboard.writeText(shareText + `\n\nvia ${APP_URL}`);
+      // Make the copy button display "Copied!" for two seconds
       setRecentlyCopied(true);
       setTimeout(() => {
         setRecentlyCopied(false);
@@ -192,7 +263,7 @@ function App() {
 
   // Builds Twitter link using existing shareText and opens in browser
   // Share options are already hidden if shareText is null, so no need to check here
-  function handleShareTwitter() {
+  function handleShareTextTwitter() {
     let shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText + "\n\nvia")}&url=${encodeURIComponent(APP_URL)}`;
     window.open(shareLink);
   }
@@ -281,13 +352,13 @@ function App() {
         <br />
 
         <button type="button" onClick={() => setShowTutorial(true)}>
-          How to obtain history file?
+          <strong>How to obtain history file?</strong>
         </button>
       </div>
       <br />
       {entries.length === 0 && (
         <button type="button" onClick={handleSampleData}>
-          Try with sample data
+          <strong>Try with sample data</strong>
         </button>
       )}
       {games.length > 0 && (
@@ -342,7 +413,7 @@ function App() {
               </div>
               {!isSampleData && summary.uniqueGames > 0 && (
                 <button type="button" onClick={openShareWindow}>
-                  Share
+                  <strong>Share</strong>
                 </button>
               )}
             </section>
@@ -514,7 +585,7 @@ function App() {
           <br />
 
           <button type="button" onClick={() => setSelectedGameId(null)}>
-            Back to games
+            <strong>Back to games</strong>
           </button>
 
           <table>
@@ -728,7 +799,7 @@ function App() {
             <br />
 
             <button type="button" onClick={() => setShowTutorial(false)}>
-              Close
+              <strong>Close</strong>
             </button>
           </div>
         </div>
@@ -841,7 +912,7 @@ function App() {
             <br />
 
             <button type="button" onClick={() => setShowCredits(false)}>
-              Close
+              <strong>Close</strong>
             </button>
           </div>
         </div>
@@ -853,23 +924,62 @@ function App() {
               <strong>Share</strong>
             </p>
 
-            <p className="share-preview">{handleShareDisplay()}</p>
+            <br />
 
-            {shareText && (
-              <div className="button-row share-buttons">
-                <button type="button" onClick={handleShareCopy}>
-                  {recentlyCopied ? "Copied!" : "Copy to Clipboard"}
+            <div className="share-menu-container">
+              <div className="button-row share-tab-row">
+                <button type="button" onClick={() => setShareTab(0)}>
+                  {shareTab === 0 ? <strong>● Image</strong> : "Image"}
                 </button>
-                <button type="button" onClick={handleShareTwitter}>
-                  Share to X
+                <button type="button" onClick={() => setShareTab(1)}>
+                  {shareTab === 1 ? <strong>● Text</strong> : "Text"}
                 </button>
               </div>
-            )}
+
+              {shareTab === 0 ? (
+                <div className="image-share-box">
+                  {shareImageUrl && (
+                    <div>
+                      <img
+                        className="share-image-preview"
+                        src={shareImageUrl}
+                      />
+                      <div className="button-row share-buttons">
+                        <button type="button" onClick={downloadShareImage}>
+                          <strong>Download Image</strong>
+                        </button>
+                        {shareImagePossible && (
+                          <button type="button" onClick={openImageShareDialog}>
+                            <strong>Share Image</strong>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <p className="share-preview">{handleShareDisplay()}</p>
+                  {shareText && (
+                    <div className="button-row share-buttons">
+                      <button type="button" onClick={handleShareTextCopy}>
+                        <strong>
+                          {recentlyCopied ? "Copied!" : "Copy to Clipboard"}
+                        </strong>
+                      </button>
+                      <button type="button" onClick={handleShareTextTwitter}>
+                        <strong>Share to X</strong>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <br />
 
             <button type="button" onClick={() => setShowShare(false)}>
-              Close
+              <strong>Close</strong>
             </button>
           </div>
         </div>
@@ -879,7 +989,7 @@ function App() {
       <div>
         <div className="button-row footer-buttons">
           <button type="button" onClick={() => setShowCredits(true)}>
-            Credits
+            <strong>Credits</strong>
           </button>
           <button
             type="button"
@@ -889,7 +999,7 @@ function App() {
               );
             }}
           >
-            GitHub
+            <strong>GitHub</strong>
           </button>
         </div>
       </div>

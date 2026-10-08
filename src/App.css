@@ -93,6 +93,7 @@ td:last-child button:hover {
   border-radius: 8px;
   max-width: 700px;
   width: 100%;
+  min-height: 80vh;
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -118,6 +119,7 @@ button {
   padding: 0.6rem 1rem;
   border-radius: 24px;
   color: inherit;
+  background-color: var(--button);
 }
 
 input[type="file"] {
@@ -144,4 +146,21 @@ input[type="file"] {
   .hide-on-desktop {
     display: none;
   }
+}
+
+.share-tab-row button {
+  min-width: 80px;
+}
+
+.share-image-preview {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  margin: 1rem auto;
+}
+
+.share-menu-container {
+  min-height: 620px;
+  margin: 0 auto;
 }

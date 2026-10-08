@@ -4,6 +4,11 @@ PS2 Play History Explorer is a React Vite-based web application for parsing and 
 
 # Try it now at https://ambermemorydoll.github.io/ps2-play-history/!
 
+## Showcase
+
+![Screenshot](https://raw.githubusercontent.com/ambermemorydoll/ps2-play-history/refs/heads/main/repo-img/interface-screenshot.png)
+![Shared image example](https://raw.githubusercontent.com/ambermemorydoll/ps2-play-history/refs/heads/main/repo-img/share-img-example.png)
+
 ## Background
 
 ### What are game history files?
@@ -52,7 +57,7 @@ There's some logic that moves entries between `history` and `history.old` but I 
 - **Manual Redump lookup links:** Search potential matches when database retrieval isn't possible.
 - **Column sorting:** Sort by title, ID, cumulative play count, last played date, or number of records.
 - **Summary view:** Record counts, unique games played, tracked play sessions, earliest and latest known dates, all in one place.
-- **Summary sharing:** Show off your gameplay habits and favourite titles with social media sharing options.
+- **Summary sharing:** Show off your gameplay habits and favourite titles with social media sharing options, in text or image format.
 - **Individual record view:** See source file, dates and play counts for all records processed.
 - **Automatic light and dark mode support:** Please consider checking out the dark mode! It's PS2-themed :)
 - **Privacy guaranteed:** All processing happens locally. No files are sent to a server.
