@@ -161,6 +161,8 @@ input[type="file"] {
 }
 
 .share-menu-container {
-  min-height: 620px;
+  width: 100%;
+  aspect-ratio: 0.775;
+  max-width: 500px;
   margin: 0 auto;
 }

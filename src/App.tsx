@@ -938,7 +938,7 @@ function App() {
 
               {shareTab === 0 ? (
                 <div className="image-share-box">
-                  {shareImageUrl && (
+                  {shareImageUrl ? (
                     <div>
                       <img
                         className="share-image-preview"
@@ -954,6 +954,13 @@ function App() {
                           </button>
                         )}
                       </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <br />
+                      <p>
+                        <strong>Generating image...</strong>
+                      </p>
                     </div>
                   )}
                 </div>
