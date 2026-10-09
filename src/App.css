@@ -180,3 +180,22 @@ input[type="file"] {
   max-width: 500px;
   margin: 0 auto;
 }
+
+.loader {
+  display: block;
+  border: 8px solid #173064;
+  border-top: 8px solid #6FB8FE;
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 30px;
+  height: 30px;
+  margin: -23px 0 0 -23px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

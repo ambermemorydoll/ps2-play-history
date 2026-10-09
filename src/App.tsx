@@ -961,6 +961,7 @@ function App() {
                       <p>
                         <strong>Generating image...</strong>
                       </p>
+                      <div className="loader"></div>
                     </div>
                   )}
                 </div>
