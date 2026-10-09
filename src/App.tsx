@@ -41,6 +41,7 @@ function App() {
   const [shareImageUrl, setShareImageUrl] = useState<string | null>(null); // Image as link to local .png file, used for preview and downloading
   const [shareTab, setShareTab] = useState<number>(0); // Which share tab is in use
   const [shareImagePossible, setShareImagePossible] = useState(false); // Whether the Share Image button should be displayed
+  const [shareTextPossible, setShareTextPossible] = useState(false); // Whether the Share Text button should be displayed
 
   async function loadHistoryFiles(files: File[]) {
     setError(null);
@@ -180,17 +181,6 @@ function App() {
         const imageFile = createShareImageFile(shareImageBlob);
         setShareImageFile(imageFile);
 
-        /*Determine whether image can be shared
-        (Why is navigator.canShare() not available without HTTPS? I treated it
-        as a check whether sharing was available (assuming HTTP contexts would
-        just return false), but got null instead, which was a huge headache to
-        troubleshoot on mobile...)*/
-        setShareImagePossible(
-          navigator.canShare
-            ? imageFile !== null && navigator.canShare({ files: [imageFile] })
-            : false,
-        );
-
         // Make image URL for preview display in the Share window
         const imageUrl = URL.createObjectURL(shareImageBlob);
         setShareImageUrl(imageUrl);
@@ -205,6 +195,16 @@ function App() {
     const imageFile = new File([imageBlob], "ps2-play-history.png", {
       type: "image/png",
     });
+    /*Determine whether image can be shared on this device
+    (Why is navigator.canShare() not available without HTTPS? I treated it
+    as a check whether sharing was available (assuming HTTP contexts would
+    just return false), but got null instead, which was a huge headache to
+    troubleshoot on mobile...)*/
+    setShareImagePossible(
+      navigator.canShare
+        ? imageFile !== null && navigator.canShare({ files: [imageFile] })
+        : false,
+    );
     return imageFile;
   }
 
@@ -221,7 +221,6 @@ function App() {
   // Opens the device's native share dialog and passes image file as .png
   function openImageShareDialog() {
     if (shareImageFile) {
-      // I hope this works. navigator.share() only works over HTTPS, so I can't test until after deploying.
       navigator.share({ files: [shareImageFile] });
     } else {
       throw new Error("No image available to share");
@@ -233,7 +232,14 @@ function App() {
   // Generates and returns share text using function imported from statistics.ts
   function retrieveShareText(topGames: GameSummary[]): string | null {
     if (summary && topGames) {
-      return createShareSummary(summary, topGames);
+      const shareSummary = createShareSummary(summary, topGames);
+      // Determine whether text can be shared on this device
+      setShareTextPossible(
+        navigator.canShare
+          ? navigator.canShare({ text: shareText + `\n\nvia ${APP_URL}` })
+          : false,
+      );
+      return shareSummary;
     } else {
       return null;
     }
@@ -258,6 +264,14 @@ function App() {
       }, 2000);
     } catch (err) {
       console.log(`Couldn't copy share summary: ${err}`);
+    }
+  }
+
+  function handleShareTextDialog() {
+    if (shareText) {
+      navigator.share({ text: shareText + `\n\nvia ${APP_URL}` });
+    } else {
+      throw new Error("No text available to share");
     }
   }
 
@@ -629,313 +643,299 @@ function App() {
         </section>
       )}
       {showTutorial && (
-        <div className="tutorial-overlay">
-          <div className="tutorial-modal">
+        <div className="popup-overlay">
+          <div className="popup-modal">
             <p>
               <strong>Obtaining history files</strong>
             </p>
 
             <br />
 
-            <p>
-              <strong>
-                The easiest way to obtain the history files is by using
-                uLaunchElf (or its forks), included by default with most custom
-                firmware installs.
-              </strong>
-            </p>
+            <div className="popup-modal-content">
+              <p>
+                <strong>
+                  The easiest way to obtain the history files is by using
+                  uLaunchElf (or its forks), included by default with most
+                  custom firmware installs.
+                </strong>
+              </p>
+              <br />
+              <p>
+                <i>
+                  If you already know what you're doing: the files you're
+                  looking for are <code>history</code> and{" "}
+                  <code>history.old</code> inside <code>BxDATA-SYSTEM</code>.
+                </i>
+              </p>
+              <br />
+              <img
+                className="tutorial-screenshot"
+                src={`${import.meta.env.BASE_URL}tutorial/Step1.webp`}
+              />
+              <p>
+                If you have a FreeMCBoot memory card, you should have a variant
+                of uLaunchElf near the top of the PS2 menu. If you don't have
+                one,{" "}
+                <a
+                  href="https://github.com/CTurt/FreeDVDBoot"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  FreeDVDBoot
+                </a>{" "}
+                is an alternative you may be able to use without purchasing new
+                hardware.
+              </p>
+              <br />
+              <p>
+                After launching uLaunchELF and pressing Circle to continue{" "}
+                <strong>
+                  (note that the program uses the Japanese standard for menu
+                  controls - Circle to confirm and Cross to cancel)
+                </strong>
+                , you should see a list of devices. <code>mc0:/</code> and{" "}
+                <code>mc1:/</code> are your inserted memory cards, Slot 1 and
+                Slot 2 respectively. If you have used both cards
+                interchangeably, you may use the history files from both - this
+                app supports importing any number of files.
+              </p>
+              <br />
+              <p>
+                <strong>
+                  Note that PlayStation 1 memory cards do not store history
+                  files.
+                </strong>
+              </p>
+              <img
+                className="tutorial-screenshot"
+                src={`${import.meta.env.BASE_URL}tutorial/Step2.webp`}
+              />
+              <p>
+                After entering one of your memory cards with Circle, you'll see
+                a list of save folders. The one you're looking for depends on
+                your console's region.
+              </p>
+              <br />
+              <p>
+                <li>
+                  Asia and the Americas: <code>BADATA-SYSTEM</code>
+                </li>
+                <li>
+                  Europe: <code>BEDATA-SYSTEM</code>
+                </li>
+                <li>
+                  Japan: <code>BIDATA-SYSTEM</code>
+                </li>
+                <li>
+                  China: <code>BCDATA-SYSTEM</code> (untested, format may
+                  differ)
+                </li>
+              </p>
+              <img
+                className="tutorial-screenshot"
+                src={`${import.meta.env.BASE_URL}tutorial/Step3.webp`}
+              />
+              <br />
+              <p>After locating the folder, press Circle to enter it.</p>
+              <br />
+              <p>
+                <strong>
+                  If you've ever used MechaPwn or otherwise modified your
+                  console's region, you may have multiple folders. You may
+                  import all of them at once with the tool, provided that you've
+                  given them unique filenames.
+                </strong>
+              </p>
+              <br />
+              <p>
+                Once in the folder, press Cross to select both{" "}
+                <code>history</code> and <code>history.old</code>. With both
+                files selected, press R1 to open the menu, then press Circle to
+                select the Copy option.
+              </p>
+              <img
+                className="tutorial-screenshot"
+                src={`${import.meta.env.BASE_URL}tutorial/Step5.webp`}
+              />
+              <p>
+                With both files copied, repeatedly press Triangle to go back
+                until you're at the drive list again. This time, connect a USB
+                storage device and navigate to <code>mass:/</code> instead.
+              </p>
+              <img
+                className="tutorial-screenshot"
+                src={`${import.meta.env.BASE_URL}tutorial/Step6.webp`}
+              />
+              <p>
+                The contents of your USB device will now be displayed. Pick
+                whichever directory you'd like to place the files in, press R1
+                to open the menu again, and this time select Paste.
+              </p>
+              <img
+                className="tutorial-screenshot"
+                src={`${import.meta.env.BASE_URL}tutorial/Step7.webp`}
+              />
+              <p>
+                The files will now be stored on your USB device. Power down your
+                console, insert it into your computer, and upload the files on
+                the previous page.
+              </p>
+              <br />
+              <p>
+                <strong>
+                  All processing is handled locally in the browser, your
+                  imported files stay private and are not uploaded to the
+                  internet.
+                </strong>
+              </p>
+            </div>
 
             <br />
-
-            <p>
-              <i>
-                If you already know what you're doing: the files you're looking
-                for are <code>history</code> and <code>history.old</code> inside{" "}
-                <code>BxDATA-SYSTEM</code>.
-              </i>
-            </p>
-
-            <br />
-
-            <img
-              className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step1.webp`}
-            />
-
-            <p>
-              If you have a FreeMCBoot memory card, you should have a variant of
-              uLaunchElf near the top of the PS2 menu. If you don't have one,{" "}
-              <a
-                href="https://github.com/CTurt/FreeDVDBoot"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                FreeDVDBoot
-              </a>{" "}
-              is an alternative you may be able to use without purchasing new
-              hardware.
-            </p>
-
-            <br />
-
-            <p>
-              After launching uLaunchELF and pressing Circle to continue{" "}
-              <strong>
-                (note that the program uses the Japanese standard for menu
-                controls - Circle to confirm and Cross to cancel)
-              </strong>
-              , you should see a list of devices. <code>mc0:/</code> and{" "}
-              <code>mc1:/</code> are your inserted memory cards, Slot 1 and Slot
-              2 respectively. If you have used both cards interchangeably, you
-              may use the history files from both - this app supports importing
-              any number of files.
-            </p>
-
-            <br />
-
-            <p>
-              <strong>
-                Note that PlayStation 1 memory cards do not store history files.
-              </strong>
-            </p>
-
-            <img
-              className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step2.webp`}
-            />
-
-            <p>
-              After entering one of your memory cards with Circle, you'll see a
-              list of save folders. The one you're looking for depends on your
-              console's region.
-            </p>
-            <br />
-            <p>
-              <li>
-                Asia and the Americas: <code>BADATA-SYSTEM</code>
-              </li>
-              <li>
-                Europe: <code>BEDATA-SYSTEM</code>
-              </li>
-              <li>
-                Japan: <code>BIDATA-SYSTEM</code>
-              </li>
-              <li>
-                China: <code>BCDATA-SYSTEM</code> (untested, format may differ)
-              </li>
-            </p>
-
-            <img
-              className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step3.webp`}
-            />
-
-            <br />
-
-            <p>After locating the folder, press Circle to enter it.</p>
-
-            <br />
-
-            <p>
-              <strong>
-                If you've ever used MechaPwn or otherwise modified your
-                console's region, you may have multiple folders. You may import
-                all of them at once with the tool, provided that you've given
-                them unique filenames.
-              </strong>
-            </p>
-
-            <br />
-
-            <p>
-              Once in the folder, press Cross to select both{" "}
-              <code>history</code> and <code>history.old</code>. With both files
-              selected, press R1 to open the menu, then press Circle to select
-              the Copy option.
-            </p>
-
-            <img
-              className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step5.webp`}
-            />
-
-            <p>
-              With both files copied, repeatedly press Triangle to go back until
-              you're at the drive list again. This time, connect a USB storage
-              device and navigate to <code>mass:/</code> instead.
-            </p>
-
-            <img
-              className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step6.webp`}
-            />
-
-            <p>
-              The contents of your USB device will now be displayed. Pick
-              whichever directory you'd like to place the files in, press R1 to
-              open the menu again, and this time select Paste.
-            </p>
-
-            <img
-              className="tutorial-screenshot"
-              src={`${import.meta.env.BASE_URL}tutorial/Step7.webp`}
-            />
-
-            <p>
-              The files will now be stored on your USB device. Power down your
-              console, insert it into your computer, and upload the files on the
-              previous page.
-            </p>
-
-            <br />
-
-            <p>
-              <strong>
-                All processing is handled locally in the browser, your imported
-                files stay private and are not uploaded to the internet.
-              </strong>
-            </p>
-
-            <br />
-
-            <button type="button" onClick={() => setShowTutorial(false)}>
-              <strong>Close</strong>
-            </button>
+            <div>
+              <button type="button" onClick={() => setShowTutorial(false)}>
+                <strong>Close</strong>
+              </button>
+            </div>
           </div>
         </div>
       )}
       {showCredits && (
-        <div className="tutorial-overlay">
-          <div className="tutorial-modal">
+        <div className="popup-overlay">
+          <div className="popup-modal">
             <p>
               <strong>Credits</strong>
             </p>
 
             <br />
 
-            <p>
-              <strong>
-                Developed by{" "}
-                <a
-                  href="https://github.com/ambermemorydoll"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Amber L.
-                </a>
-              </strong>
-            </p>
-            <br />
-            <p>Special thanks to:</p>
-            <br />
-            <li>
+            <div className="popup-modal-content">
               <p>
-                <a
-                  href="https://www.youtube.com/@sync-on-luma"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  sync-on-luma (y)
-                </a>{" "}
-                for his excellent{" "}
-                <a
-                  href="https://www.youtube.com/watch?v=hjekB5x8uXo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  video on reverse-engineering the history files
-                </a>{" "}
-                of the PS2.
+                <strong>
+                  Developed by{" "}
+                  <a
+                    href="https://github.com/ambermemorydoll"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Amber L.
+                  </a>
+                </strong>
               </p>
-            </li>
-            <li>
+              <br />
+              <p>Special thanks to:</p>
+              <br />
+              <li>
+                <p>
+                  <a
+                    href="https://www.youtube.com/@sync-on-luma"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    sync-on-luma (y)
+                  </a>{" "}
+                  for his excellent{" "}
+                  <a
+                    href="https://www.youtube.com/watch?v=hjekB5x8uXo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    video on reverse-engineering the history files
+                  </a>{" "}
+                  of the PS2.
+                </p>
+              </li>
+              <li>
+                <p>
+                  <a
+                    href="https://github.com/israpps"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    israpps
+                  </a>{" "}
+                  for his{" "}
+                  <a
+                    href="https://israpps.github.io/FreeMcBoot-Installer/test/10_System_Updates.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    research on the PS2's system folders
+                  </a>{" "}
+                  and his{" "}
+                  <a
+                    href="https://github.com/israpps/PS2-HistoryTweaker"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    PS2-HistoryTweaker project
+                  </a>
+                  .
+                </p>
+              </li>
+              <li>
+                <p>
+                  The{" "}
+                  <a
+                    href="https://github.com/niemasd/GameDB-PSX"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    GameDB-PSX Database
+                  </a>{" "}
+                  for the PSX.data.tsv file used to match PS1 game IDs with
+                  titles.
+                </p>
+              </li>
+              <li>
+                <p>
+                  The{" "}
+                  <a
+                    href="https://github.com/VTSTech/PS2-OPL-CFG"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    PS2-OPL-CFG Database
+                  </a>{" "}
+                  for the PS2-GAMEID-TITLE-MASTER.csv file used to match PS2
+                  game IDs with titles.
+                </p>
+              </li>
+              <br />
               <p>
-                <a
-                  href="https://github.com/israpps"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  israpps
-                </a>{" "}
-                for his{" "}
-                <a
-                  href="https://israpps.github.io/FreeMcBoot-Installer/test/10_System_Updates.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  research on the PS2's system folders
-                </a>{" "}
-                and his{" "}
-                <a
-                  href="https://github.com/israpps/PS2-HistoryTweaker"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  PS2-HistoryTweaker project
-                </a>
-                .
+                This project is not affiliated with Sony Computer Entertainment
+                or the PlayStation brand in any capacity.
               </p>
-            </li>
-            <li>
-              <p>
-                The{" "}
-                <a
-                  href="https://github.com/niemasd/GameDB-PSX"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  GameDB-PSX Database
-                </a>{" "}
-                for the PSX.data.tsv file used to match PS1 game IDs with
-                titles.
-              </p>
-            </li>
-            <li>
-              <p>
-                The{" "}
-                <a
-                  href="https://github.com/VTSTech/PS2-OPL-CFG"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  PS2-OPL-CFG Database
-                </a>{" "}
-                for the PS2-GAMEID-TITLE-MASTER.csv file used to match PS2 game
-                IDs with titles.
-              </p>
-            </li>
-            <br />
-            <p>
-              This project is not affiliated with Sony Computer Entertainment or
-              the PlayStation brand in any capacity.
-            </p>
+            </div>
+
             <br />
 
-            <button type="button" onClick={() => setShowCredits(false)}>
-              <strong>Close</strong>
-            </button>
+            <div>
+              <button type="button" onClick={() => setShowCredits(false)}>
+                <strong>Close</strong>
+              </button>
+            </div>
           </div>
         </div>
       )}
       {showShare && (
-        <div className="tutorial-overlay">
-          <div className="tutorial-modal">
+        <div className="popup-overlay">
+          <div className="popup-modal tabbed-modal">
             <p>
               <strong>Share</strong>
             </p>
 
             <br />
 
-            <div className="share-menu-container">
-              <div className="button-row share-tab-row">
-                <button type="button" onClick={() => setShareTab(0)}>
-                  {shareTab === 0 ? <strong>● Image</strong> : "Image"}
-                </button>
-                <button type="button" onClick={() => setShareTab(1)}>
-                  {shareTab === 1 ? <strong>● Text</strong> : "Text"}
-                </button>
-              </div>
+            <div className="button-row share-tab-row">
+              <button type="button" onClick={() => setShareTab(0)}>
+                {shareTab === 0 ? <strong>● Image</strong> : "Image"}
+              </button>
+              <button type="button" onClick={() => setShareTab(1)}>
+                {shareTab === 1 ? <strong>● Text</strong> : "Text"}
+              </button>
+            </div>
 
+            <div className="popup-modal-content">
               {shareTab === 0 ? (
                 <div className="image-share-box">
                   {shareImageUrl ? (
@@ -966,7 +966,7 @@ function App() {
                 </div>
               ) : (
                 <div>
-                  <p className="share-preview">{handleShareDisplay()}</p>
+                  <p className="share-text-preview">{handleShareDisplay()}</p>
                   {shareText && (
                     <div className="button-row share-buttons">
                       <button type="button" onClick={handleShareTextCopy}>
@@ -974,9 +974,15 @@ function App() {
                           {recentlyCopied ? "Copied!" : "Copy to Clipboard"}
                         </strong>
                       </button>
-                      <button type="button" onClick={handleShareTextTwitter}>
-                        <strong>Share to X</strong>
-                      </button>
+                      {shareTextPossible ? (
+                        <button type="button" onClick={handleShareTextDialog}>
+                          <strong>Share Text</strong>
+                        </button>
+                      ) : (
+                        <button type="button" onClick={handleShareTextTwitter}>
+                          <strong>Share to X</strong>
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -985,9 +991,11 @@ function App() {
 
             <br />
 
-            <button type="button" onClick={() => setShowShare(false)}>
-              <strong>Close</strong>
-            </button>
+            <div>
+              <button type="button" onClick={() => setShowShare(false)}>
+                <strong>Close</strong>
+              </button>
+            </div>
           </div>
         </div>
       )}

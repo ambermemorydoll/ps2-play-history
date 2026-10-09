@@ -65,7 +65,7 @@ td:last-child button:hover {
   border-radius: 4px;
 }
 
-.share-preview {
+.share-text-preview {
   margin: 1rem 0;
   padding: 0.75rem 1rem;
   border: 1px solid currentColor;
@@ -73,9 +73,10 @@ td:last-child button:hover {
   overflow-x: auto;
   text-align: left;
   white-space: pre-line;
+  text-wrap: nowrap;
 }
 
-.tutorial-overlay {
+.popup-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -86,19 +87,32 @@ td:last-child button:hover {
   z-index: 1000;
 }
 
-.tutorial-modal {
+.popup-modal {
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
   color: var(--text);
   padding: 2rem;
   border-radius: 8px;
   max-width: 700px;
   width: 100%;
-  min-height: 80vh;
   max-height: 80vh;
   overflow-y: auto;
 }
 
-.tutorial-modal h2 {
+.tabbed-modal {
+  min-height: 80vh;
+}
+
+.popup-modal-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.5rem 0rem;
+}
+
+.popup-modal h2 {
   color: var(--text-h);
 }
 
