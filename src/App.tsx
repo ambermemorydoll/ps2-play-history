@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { generateCsv } from "./data/export";
 import { createShareSummary, generateShareImage } from "./data/share";
 import {
   createGameSummaries,
@@ -159,6 +160,17 @@ function App() {
 
     setSortColumn(column);
     setSortDirection(defaultDirections[column]);
+  }
+
+  // Generates CSV table of game summary data and opens link to download CSV file
+  function downloadAsCsv() {
+    const csvData = generateCsv(games);
+    const csvBlob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const csvFile = new File([csvBlob], "ps2-play-history.csv", {
+      type: "text/csv",
+    });
+    const csvUrl = URL.createObjectURL(csvFile);
+    window.open(csvUrl);
   }
 
   // ---------- Universal sharing functions ----------
@@ -569,6 +581,11 @@ function App() {
                 </p>
                 <br />
               </div>
+              {!isSampleData && (
+                <button type="button" onClick={downloadAsCsv}>
+                  <strong>Download as CSV</strong>
+                </button>
+              )}
             </>
           )}
         </>
@@ -958,9 +975,11 @@ function App() {
                   ) : (
                     <div>
                       <br />
-                      <p>
-                        <strong>Generating image...</strong>
-                      </p>
+                      <div className="pulsing-text">
+                        <p>
+                          <strong>Generating image...</strong>
+                        </p>
+                      </div>
                       <div className="loader"></div>
                     </div>
                   )}

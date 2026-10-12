@@ -36,7 +36,7 @@ td:last-child {
 td:last-child button {
   border: none;
   background: none;
-  padding: 0;
+  padding: 0rem 1rem;
   font: inherit;
   cursor: pointer;
 }
@@ -198,4 +198,14 @@ input[type="file"] {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.pulsing-text {
+  animation: continuousPulse 1s linear infinite;
+}
+
+@keyframes continuousPulse {
+  33.3%, 66.6% { opacity: .9; }
+  50% { opacity: 1; }
+  0%, 100% { opacity: .33; }
 }
