@@ -28,7 +28,6 @@ th button:hover {
 
 th:last-child,
 td:last-child {
-  text-align: center;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
 }
@@ -208,10 +207,6 @@ input[type="file"] {
   33.3%, 66.6% { opacity: .9; }
   50% { opacity: 1; }
   0%, 100% { opacity: .33; }
-}
-
-.platform-indicator {
-  text-align: center;
 }
 
 .platform-indicator span {
