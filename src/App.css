@@ -35,10 +35,10 @@ td:last-child {
 
 td:last-child button {
   border: none;
-  background: none;
   padding: 0rem 1rem;
   font: inherit;
   cursor: pointer;
+  min-width: 55px;
 }
 
 td:last-child button:hover {
@@ -208,4 +208,35 @@ input[type="file"] {
   33.3%, 66.6% { opacity: .9; }
   50% { opacity: 1; }
   0%, 100% { opacity: .33; }
+}
+
+.platform-indicator {
+  text-align: center;
+}
+
+.platform-indicator span {
+  display: inline-block;
+  border-radius: 10px;
+  padding: 0rem 0.5rem;
+}
+
+.platform-ps1 span {
+  color: #000000;
+  background: #adadad;
+}
+
+.platform-ps2 span {
+  color: var(--button-text);
+  background: var(--button);
+}
+
+.sort-icon {
+  display: inline-block;
+  width: 1rem;
+  margin-left: 0.25rem;
+  text-align: center;
+}
+
+.sort-icon-hidden {
+  visibility: hidden;
 }

@@ -1,7 +1,10 @@
+import { type DatabaseEntry } from "./database";
+
 export interface PlayHistoryEntry {
   sourceFile: string;
   gameId: string;
   gameName: string;
+  gameFormat: string;
   playCount: number;
   date: Date;
 }
@@ -47,7 +50,7 @@ function decodeTimestamp(entry: Uint8Array): Date {
 export function parseHistory(
   buffer: ArrayBuffer,
   sourceFile: string,
-  gameDatabase: Map<string, string>,
+  gameDatabase: Map<string, DatabaseEntry>,
 ): PlayHistoryEntry[] {
   // Sanity checks on selected file - check that it's not empty and is a multiple
   // of 22 bytes. This does mean that any arbitrary file has a 1/22 chance of
@@ -75,7 +78,9 @@ export function parseHistory(
     const entry = bytes.slice(offset, offset + ENTRY_SIZE);
 
     const gameId = decodeGameId(entry);
-    const gameName = gameDatabase.get(gameId) ?? `Unknown (${gameId})`;
+    const gameName =
+      gameDatabase.get(gameId)?.gameName ?? `Unknown (${gameId})`;
+    const gameFormat = gameDatabase.get(gameId)?.gameFormat ?? "N/A";
     const playCount = decodePlayCount(entry);
     const date = decodeTimestamp(entry);
 
@@ -83,6 +88,7 @@ export function parseHistory(
       sourceFile,
       gameId,
       gameName,
+      gameFormat,
       playCount,
       date,
     });

@@ -46,20 +46,22 @@ There's some logic that moves entries between `history` and `history.old` but I 
 ### What are the limitations of this data?
 
 - **Play count maxes out at 63 per-record.** One byte should be able to store up to 255, but I assume Sony only wanted the towers to have a resolution of 63 (maybe to make it more reasonable for a user to reach maximum towers on their favourite games?). Either way, we can't do anything about this (retro- or pro-actively) so this app communicates to the user when their play count has been capped on one or more records.
+- **There's no indication of a game's platform.** Even the game ID format is the same between PS1 and PS2, as far as I can tell. I chose to determine platform by checking which database the game's title was pulled from. which should be accurate in all cases where a title match is available.
 - **Most people's PS2 clock batteries have expired by now.** This produces records with a date of 2000-01-01, which overwrites the existing date even if it should be in the future. For this reason, I've chosen to replace all January 2000 dates with `Unknown`, which **intentionally sort as if they are the newest entries.** I did this because, logically, the records made on a dead clock battery are likely to be newer than the ones made when it was working. If a user replaces their clock battery, the correct date will be written again as soon as they relaunch each game.
 - **There is no perfect game title database.** I used [GameDB-PSX](https://github.com/niemasd/GameDB-PSX) and [PS2-OPL-CFG](https://github.com/VTSTech/PS2-OPL-CFG) for PS1 and PS2 respectively, but I still had missing entries to add by hand for my sample data. I'm fairly sure PS2 games carry their title in their disc's metadata, so Sony could've stored it in the history files if they desired, but it would've been unnecessary for the purpose it was used for.
-- **Some homebrew and backup loaders do not respect this file.** [Open-PS2-Loader](https://github.com/ps2homebrew/Open-PS2-Loader) does, [DKWDRV](https://github.com/DKWDRV/DKWDRV) does not. [PCSX2](https://github.com/PCSX2/pcsx2) does emulate enough of the BIOS to write history data if `BIOS > Fast Boot` is disabled in the settings.
+- **Some homebrew and backup loaders do not respect this file.** [Open-PS2-Loader](https://github.com/ps2homebrew/Open-PS2-Loader) does by default, [DKWDRV](https://github.com/DKWDRV/DKWDRV) now does if manually configured (as of `1.7.6i`). [PCSX2](https://github.com/PCSX2/pcsx2) does emulate enough of the BIOS to write history data if `BIOS > Fast Boot` is disabled in the settings.
 
 ## Features
 
 - **Multi-file import:** open any combination of history files to be processed simultaneously. Multiple regions, multiple memory cards and both `history`/`history.old` files can be imported together.
-- **Game ID and title matching:** Retrieves game title where possible, _or:_
+- **Game ID and title matching:** Retrieves game title and platform where possible, _or:_
 - **Manual Redump lookup links:** Search potential matches when database retrieval isn't possible.
-- **Column sorting:** Sort by title, ID, cumulative play count, last played date, or number of records.
+- **Column sorting:** Sort by title, ID, platform, cumulative play count, last played date, or number of records.
 - **Summary view:** Record counts, unique games played, tracked play sessions, earliest and latest known dates, all in one place.
 - **Summary sharing:** Show off your gameplay habits and favourite titles with social media sharing options, in text or image format.
 - **Individual record view:** See source file, dates and play counts for all records processed.
 - **Automatic light and dark mode support:** Please consider checking out the dark mode! It's PS2-themed :)
+- **CSV export**: Utilise your parsed data in other software.
 - **Privacy guaranteed:** All processing happens locally. No files are sent to a server.
 - **File location tutorial:** Learn how to obtain the history file from your own memory card, _or:_
 - **Sample data import:** Click the `Try with sample data` button to test the app with my own memory card data. This data was a surprise even to me, as my memory card has been in use by its previous owners longer than I've been alive!

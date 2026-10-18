@@ -1,4 +1,9 @@
-export async function loadGameDatabase(): Promise<Map<string, string>> {
+export interface DatabaseEntry {
+  gameName: string;
+  gameFormat: string;
+}
+
+export async function loadGameDatabase(): Promise<Map<string, DatabaseEntry>> {
   const response = await fetch(`${import.meta.env.BASE_URL}/games.csv`);
 
   if (!response.ok) {
@@ -9,7 +14,9 @@ export async function loadGameDatabase(): Promise<Map<string, string>> {
 
   const text = await response.text();
 
-  const database = new Map<string, string>();
+  const database = new Map<string, DatabaseEntry>();
+
+  let currentFormat = "PS2";
 
   for (const line of text.split(/\r?\n/)) {
     if (!line.trim()) {
@@ -24,8 +31,15 @@ export async function loadGameDatabase(): Promise<Map<string, string>> {
 
     const gameId = columns[0].trim();
     const gameName = columns[1].trim();
+    const gameFormat = currentFormat;
 
-    database.set(gameId, gameName);
+    // Determine where the DVD player entry is - it's the last PS2 title in
+    // the database, so anything past this should be a PS1 title
+    if (columns[0] === "DVDVIDEO") {
+      currentFormat = "PS1";
+    }
+
+    database.set(gameId, { gameName, gameFormat });
   }
 
   return database;

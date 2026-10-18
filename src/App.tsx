@@ -22,10 +22,10 @@ function App() {
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<
     | "gameName"
-    | "gameId"
+    | "gameFormat"
     | "playCount"
-    | "firstPlayed"
     | "lastPlayed"
+    | "gameId"
     | "records"
   >("gameName");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -138,10 +138,10 @@ function App() {
   function handleSort(
     column:
       | "gameName"
-      | "gameId"
+      | "gameFormat"
       | "playCount"
-      | "firstPlayed"
       | "lastPlayed"
+      | "gameId"
       | "records",
   ) {
     if (sortColumn === column) {
@@ -151,10 +151,10 @@ function App() {
 
     const defaultDirections: Record<typeof column, "asc" | "desc"> = {
       gameName: "asc",
-      gameId: "asc",
+      gameFormat: "asc",
       playCount: "desc",
-      firstPlayed: "asc",
       lastPlayed: "desc",
+      gameId: "asc",
       records: "desc",
     };
 
@@ -304,7 +304,8 @@ function App() {
 
     return (
       game.gameName.toLowerCase().includes(query) ||
-      game.gameId.toLowerCase().includes(query)
+      game.gameId.toLowerCase().includes(query) ||
+      game.gameFormat.toLowerCase().includes(query)
     );
   });
 
@@ -317,8 +318,17 @@ function App() {
         comparison = a.gameName.localeCompare(b.gameName);
         break;
 
-      case "gameId":
-        comparison = a.gameId.localeCompare(b.gameId);
+      // Always sort to bottom if unknown platform
+      case "gameFormat":
+        if (a.gameFormat === "N/A" && b.gameFormat === "N/A") {
+          comparison = 0;
+        } else if (a.gameFormat === "N/A") {
+          comparison = sortDirection === "asc" ? 1 : -1;
+        } else if (b.gameFormat === "N/A") {
+          comparison = sortDirection === "asc" ? -1 : 1;
+        } else {
+          comparison = a.gameFormat.localeCompare(b.gameFormat);
+        }
         break;
 
       case "playCount":
@@ -338,6 +348,10 @@ function App() {
         } else {
           comparison = a.lastPlayed.getTime() - b.lastPlayed.getTime();
         }
+        break;
+
+      case "gameId":
+        comparison = a.gameId.localeCompare(b.gameId);
         break;
 
       case "records":
@@ -400,8 +414,8 @@ function App() {
                 Amber
               </a>
               's own memory card. It's been in use since 2002, in the hands of
-              3-4 different owners! Import your own file to clear the displayed
-              data.
+              3-4 different owners! Import your own file(s) to clear the
+              displayed data.
             </p>
           )}
 
@@ -467,26 +481,45 @@ function App() {
               <div className="table-container">
                 <table>
                   <thead>
+                    {/*Opt out of auto-translation for table headers as a workaround for
+                    this issue: https://issues.chromium.org/issues/41407169. Also occurs in
+                    Safari on Mac, for what it's worth.*/}
                     <tr>
                       <th>
                         <button
                           type="button"
                           onClick={() => handleSort("gameName")}
+                          translate="no"
                         >
                           Game
-                          {sortColumn === "gameName" &&
-                            (sortDirection === "asc" ? " ↑" : " ↓")}
+                          <span
+                            className={
+                              sortColumn === "gameName"
+                                ? "sort-icon"
+                                : "sort-icon sort-icon-hidden"
+                            }
+                          >
+                            {sortDirection === "asc" ? " ↑" : " ↓"}
+                          </span>
                         </button>
                       </th>
 
                       <th>
                         <button
                           type="button"
-                          onClick={() => handleSort("gameId")}
+                          onClick={() => handleSort("gameFormat")}
+                          translate="no"
                         >
-                          ID
-                          {sortColumn === "gameId" &&
-                            (sortDirection === "asc" ? " ↑" : " ↓")}
+                          Type
+                          <span
+                            className={
+                              sortColumn === "gameFormat"
+                                ? "sort-icon"
+                                : "sort-icon sort-icon-hidden"
+                            }
+                          >
+                            {sortDirection === "asc" ? " ↑" : " ↓"}
+                          </span>
                         </button>
                       </th>
 
@@ -494,10 +527,18 @@ function App() {
                         <button
                           type="button"
                           onClick={() => handleSort("playCount")}
+                          translate="no"
                         >
                           Play Count
-                          {sortColumn === "playCount" &&
-                            (sortDirection === "asc" ? " ↑" : " ↓")}
+                          <span
+                            className={
+                              sortColumn === "playCount"
+                                ? "sort-icon"
+                                : "sort-icon sort-icon-hidden"
+                            }
+                          >
+                            {sortDirection === "asc" ? " ↑" : " ↓"}
+                          </span>
                         </button>
                       </th>
 
@@ -505,10 +546,37 @@ function App() {
                         <button
                           type="button"
                           onClick={() => handleSort("lastPlayed")}
+                          translate="no"
                         >
                           Last Played
-                          {sortColumn === "lastPlayed" &&
-                            (sortDirection === "asc" ? " ↑" : " ↓")}
+                          <span
+                            className={
+                              sortColumn === "lastPlayed"
+                                ? "sort-icon"
+                                : "sort-icon sort-icon-hidden"
+                            }
+                          >
+                            {sortDirection === "asc" ? " ↑" : " ↓"}
+                          </span>
+                        </button>
+                      </th>
+
+                      <th>
+                        <button
+                          type="button"
+                          onClick={() => handleSort("gameId")}
+                          translate="no"
+                        >
+                          ID
+                          <span
+                            className={
+                              sortColumn === "gameId"
+                                ? "sort-icon"
+                                : "sort-icon sort-icon-hidden"
+                            }
+                          >
+                            {sortDirection === "asc" ? " ↑" : " ↓"}
+                          </span>
                         </button>
                       </th>
 
@@ -516,10 +584,18 @@ function App() {
                         <button
                           type="button"
                           onClick={() => handleSort("records")}
+                          translate="no"
                         >
                           Records
-                          {sortColumn === "records" &&
-                            (sortDirection === "asc" ? " ↑" : " ↓")}
+                          <span
+                            className={
+                              sortColumn === "records"
+                                ? "sort-icon"
+                                : "sort-icon sort-icon-hidden"
+                            }
+                          >
+                            {sortDirection === "asc" ? " ↑" : " ↓"}
+                          </span>
                         </button>
                       </th>
                     </tr>
@@ -531,7 +607,13 @@ function App() {
                         <td className="game-name" title={game.gameName}>
                           {game.gameName}
                         </td>
-                        <td>{game.gameId}</td>
+
+                        <td
+                          className={`platform-indicator platform-${game.gameFormat.toLowerCase()}`}
+                        >
+                          <span>{game.gameFormat}</span>
+                        </td>
+
                         <td>
                           {game.hasMaxPlayCount ? (
                             <span title="One or more records has reached its maximum value.">
@@ -541,6 +623,7 @@ function App() {
                             game.playCount
                           )}
                         </td>
+
                         <td>
                           {game.lastPlayed === null ? (
                             <span title="The last record reports a date prior to the PS2's launch, which is likely indicative of a dead clock battery.">
@@ -550,6 +633,9 @@ function App() {
                             game.lastPlayed.toISOString().slice(0, 10)
                           )}
                         </td>
+
+                        <td translate="no">{game.gameId}</td>
+
                         <td>
                           <button
                             type="button"
@@ -596,6 +682,12 @@ function App() {
 
           <h2>
             {games.find((game) => game.gameId === selectedGameId)?.gameName}
+            <i>
+              {games.find((game) => game.gameId === selectedGameId)
+                ?.gameFormat !== "N/A"
+                ? ` (${games.find((game) => game.gameId === selectedGameId)?.gameFormat})`
+                : ""}
+            </i>
           </h2>
           <p>
             <i>

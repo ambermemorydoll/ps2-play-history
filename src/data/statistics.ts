@@ -3,6 +3,7 @@ import type { PlayHistoryEntry } from "../parser/history";
 export interface GameSummary {
   gameId: string;
   gameName: string;
+  gameFormat: string;
   playCount: number;
   lastPlayed: Date | null;
   records: number;
@@ -41,6 +42,7 @@ export function createGameSummaries(
       games.set(entry.gameId, {
         gameId: entry.gameId,
         gameName: entry.gameName,
+        gameFormat: entry.gameFormat,
         playCount: entry.playCount,
         lastPlayed: isImpossibleDate(entry.date) ? null : entry.date,
         records: 1,
