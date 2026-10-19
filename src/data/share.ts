@@ -37,7 +37,12 @@ export async function generateShareImage(
   bgGradient.addColorStop(1, "#173064");*/
 
   // Image background
-  await drawImageFromFile(ctx, "share-bg.png", 0, 0, width, height);
+  try {
+    await drawImageFromFile(ctx, "share-bg.png", 0, 0, width, height);
+  } catch (err) {
+    console.log(`Couldn't download background image: ${err}`);
+    throw new Error("Failed to download necessary assets.");
+  }
 
   // Main heading
   drawOutlinedText(
@@ -249,14 +254,19 @@ export async function generateShareImage(
   );
 
   // QR code embed
-  await drawImageFromFile(
-    ctx,
-    "page-qr-code.png",
-    width - 150 - 10,
-    height - 150 - 10,
-    150,
-    150,
-  );
+  try {
+    await drawImageFromFile(
+      ctx,
+      "page-qr-code.png",
+      width - 150 - 10,
+      height - 150 - 10,
+      150,
+      150,
+    );
+  } catch (err) {
+    console.log(`Couldn't download QR code image: ${err}`);
+    throw new Error("Failed to download necessary assets.");
+  }
 
   return new Promise<Blob | null>((resolve) => {
     canvas.toBlob(resolve, "image/png");

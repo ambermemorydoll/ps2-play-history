@@ -148,11 +148,11 @@ input[type="file"] {
 }
 
 .footer-buttons button {
-  min-width: 80px;
+  min-width: 85px;
 }
 
 .share-buttons button {
-  min-width: 140px;
+  min-width: 160px;
 }
 
 @media screen and (min-width: 481px) {
@@ -162,7 +162,7 @@ input[type="file"] {
 }
 
 .share-tab-row button {
-  min-width: 80px;
+  min-width: 90px;
 }
 
 .share-image-preview {

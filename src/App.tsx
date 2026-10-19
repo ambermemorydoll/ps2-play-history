@@ -18,6 +18,7 @@ function App() {
   // States
   const [entries, setEntries] = useState<PlayHistoryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [imageShareError, setImageShareError] = useState<string | null>(null);
   const [games, setGames] = useState<GameSummary[]>([]);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<
@@ -84,7 +85,10 @@ function App() {
     } catch (err) {
       setIsDatabaseLoading(false);
       console.error(err);
+      if (err instanceof TypeError) {
+      }
       setError(`${String(err).replace(/Error:/, "")}`);
+      return;
     }
   }
 
@@ -115,7 +119,7 @@ function App() {
           );
 
           if (!response.ok) {
-            throw new Error(`Failed to load file: ${fileName}`);
+            throw new Error(`Failed to load file: ${fileName}.`);
           }
 
           const blob = await response.blob();
@@ -176,6 +180,8 @@ function App() {
   // ---------- Universal sharing functions ----------
 
   async function openShareWindow() {
+    setImageShareError(null);
+
     let topGames = findTopGames(games);
 
     // Generate and store share summary text
@@ -186,16 +192,23 @@ function App() {
       setShowShare(true);
       setShareImagePossible(false);
 
-      const shareImageBlob = await generateShareImage(summary, topGames);
+      try {
+        const shareImageBlob = await generateShareImage(summary, topGames);
 
-      if (shareImageBlob) {
-        // Generate saveable file from image blob for downloading
-        const imageFile = createShareImageFile(shareImageBlob);
-        setShareImageFile(imageFile);
+        if (shareImageBlob) {
+          // Generate saveable file from image blob for downloading
+          const imageFile = createShareImageFile(shareImageBlob);
+          setShareImageFile(imageFile);
 
-        // Make image URL for preview display in the Share window
-        const imageUrl = URL.createObjectURL(shareImageBlob);
-        setShareImageUrl(imageUrl);
+          // Make image URL for preview display in the Share window
+          const imageUrl = URL.createObjectURL(shareImageBlob);
+          setShareImageUrl(imageUrl);
+        }
+      } catch (err) {
+        console.error(err);
+        setImageShareError(
+          `Image generation failed: ${String(err).replace(/Error:/, "")}`,
+        );
       }
     }
   }
@@ -226,7 +239,7 @@ function App() {
     if (shareImageUrl) {
       window.open(shareImageUrl);
     } else {
-      throw new Error("No image available to download");
+      throw new Error("No image available to download.");
     }
   }
 
@@ -235,7 +248,7 @@ function App() {
     if (shareImageFile) {
       navigator.share({ files: [shareImageFile] });
     } else {
-      throw new Error("No image available to share");
+      throw new Error("No image available to share.");
     }
   }
 
@@ -283,7 +296,7 @@ function App() {
     if (shareText) {
       navigator.share({ text: shareText + `\n\nvia ${APP_URL}` });
     } else {
-      throw new Error("No text available to share");
+      throw new Error("No text available to share.");
     }
   }
 
@@ -667,6 +680,7 @@ function App() {
                 </p>
                 <br />
               </div>
+              <br />
               {!isSampleData && (
                 <button type="button" onClick={downloadAsCsv}>
                   <strong>Download as CSV</strong>
@@ -1066,13 +1080,32 @@ function App() {
                     </div>
                   ) : (
                     <div>
-                      <br />
-                      <div className="pulsing-text">
-                        <p>
-                          <strong>Generating image...</strong>
-                        </p>
-                      </div>
-                      <div className="loader"></div>
+                      {imageShareError ? (
+                        <div>
+                          <p>
+                            <strong>{imageShareError}</strong>
+                          </p>
+                          <br />
+                          <p>
+                            <strong>
+                              Please check your internet connection and try
+                              again.
+                            </strong>
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <div>
+                            <br />
+                            <div className="pulsing-text">
+                              <p>
+                                <strong>Generating image...</strong>
+                              </p>
+                            </div>
+                            <div className="loader"></div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

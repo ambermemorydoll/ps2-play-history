@@ -4,7 +4,16 @@ export interface DatabaseEntry {
 }
 
 export async function loadGameDatabase(): Promise<Map<string, DatabaseEntry>> {
-  const response = await fetch(`${import.meta.env.BASE_URL}/games.csv`);
+  let response: Response;
+
+  try {
+    response = await fetch(`${import.meta.env.BASE_URL}/games.csv`);
+  } catch (err) {
+    console.log(`Couldn't download game database: ${err}`);
+    throw new Error(
+      "Failed to load game title database. Please check your internet connection.",
+    );
+  }
 
   if (!response.ok) {
     throw new Error(
