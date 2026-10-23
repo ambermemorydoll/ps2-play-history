@@ -9,7 +9,12 @@ import {
   type OverallSummary,
 } from "./data/statistics";
 import { loadGameDatabase } from "./parser/database";
-import { parseHistory, type PlayHistoryEntry } from "./parser/history";
+import {
+  decodeTimestamp,
+  parseHistory,
+  uint8ToHex,
+  type PlayHistoryEntry,
+} from "./parser/history";
 import "./App.css";
 
 const APP_URL = "https://ambermemorydoll.github.io/ps2-play-history/";
@@ -21,6 +26,9 @@ function App() {
   const [imageShareError, setImageShareError] = useState<string | null>(null);
   const [games, setGames] = useState<GameSummary[]>([]);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<PlayHistoryEntry | null>(
+    null,
+  );
   const [sortColumn, setSortColumn] = useState<
     | "gameName"
     | "gameFormat"
@@ -79,6 +87,7 @@ function App() {
         allEntries.push(...parsed);
       }
 
+      setSelectedGameId(null);
       setEntries(allEntries);
       setGames(createGameSummaries(allEntries));
       setSummary(createOverallSummary(allEntries));
@@ -724,36 +733,46 @@ function App() {
           <button type="button" onClick={() => setSelectedGameId(null)}>
             <strong>Back to games</strong>
           </button>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Play Count</th>
+                  <th>Source File</th>
+                  <th>Raw Data</th>
+                </tr>
+              </thead>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Play Count</th>
-                <th>Source File</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {entries
-                .filter((entry) => entry.gameId === selectedGameId)
-                .map((entry, index) => (
-                  <tr key={`${entry.sourceFile}-${index}`}>
-                    <td>{entry.date.toISOString().slice(0, 10)}</td>
-                    <td>
-                      {entry.playCount === 63 ? (
-                        <span title="This value caps at 63 on a firmware level. The true number of game launches likely exceeds this number.">
-                          {entry.playCount}+*
-                        </span>
-                      ) : (
-                        entry.playCount
-                      )}
-                    </td>
-                    <td>{entry.sourceFile}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+              <tbody>
+                {entries
+                  .filter((entry) => entry.gameId === selectedGameId)
+                  .map((entry, index) => (
+                    <tr key={`${entry.sourceFile}-${index}`}>
+                      <td>{entry.date.toISOString().slice(0, 10)}</td>
+                      <td>
+                        {entry.playCount === 63 ? (
+                          <span title="This value caps at 63 on a firmware level. The true number of game launches likely exceeds this number.">
+                            {entry.playCount}+*
+                          </span>
+                        ) : (
+                          entry.playCount
+                        )}
+                      </td>
+                      <td>{entry.sourceFile}</td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedRecord(entry)}
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
           <div className="hide-on-desktop">
             <p>
               <i>
@@ -1138,6 +1157,85 @@ function App() {
 
             <div>
               <button type="button" onClick={() => setShowShare(false)}>
+                <strong>Close</strong>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {selectedRecord && (
+        <div className="popup-overlay">
+          <div className="popup-modal tabbed-modal">
+            <p>
+              <strong>Record View</strong>
+            </p>
+
+            <br />
+
+            <div className="popup-modal-content">
+              <p>Raw</p>
+              <div>
+                <code>{uint8ToHex(selectedRecord.rawData).slice()}</code>
+              </div>
+
+              <br />
+
+              <p>ID</p>
+              <div>
+                <code>{uint8ToHex(selectedRecord.rawData).slice(0, 24)}</code>{" "}
+                <code>
+                  (
+                  {new TextDecoder("utf-8").decode(
+                    selectedRecord.rawData.slice(0, 12),
+                  )}
+                  )
+                </code>
+              </div>
+
+              <br />
+
+              <p>Padding</p>
+              <div>
+                <code>{uint8ToHex(selectedRecord.rawData).slice(24, 32)}</code>{" "}
+                <code>
+                  (
+                  {new TextDecoder("utf-8").decode(
+                    selectedRecord.rawData.slice(12, 16),
+                  )}
+                  )
+                </code>
+              </div>
+
+              <br />
+
+              <p>Play Count</p>
+              <div>
+                <code>{uint8ToHex(selectedRecord.rawData).slice(32, 34)}</code>{" "}
+                <code>({Number(selectedRecord.rawData[16])})</code>
+              </div>
+              <p>Bitmask/bitshift</p>
+              <div>
+                <code>{uint8ToHex(selectedRecord.rawData).slice(34, 36)}</code>{" "}
+                <code>{uint8ToHex(selectedRecord.rawData).slice(36, 38)}</code>
+              </div>
+
+              <br />
+
+              <p>Date</p>
+              <div>
+                <code>{uint8ToHex(selectedRecord.rawData).slice(40, 44)}</code>{" "}
+                <code>
+                  (
+                  {decodeTimestamp(selectedRecord.rawData)
+                    .toISOString()
+                    .slice(0, 10)}
+                  )
+                </code>
+              </div>
+            </div>
+
+            <div>
+              <button type="button" onClick={() => setSelectedRecord(null)}>
                 <strong>Close</strong>
               </button>
             </div>

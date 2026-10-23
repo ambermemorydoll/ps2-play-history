@@ -27,7 +27,7 @@ The first 11 bytes indicate the game ID:
 
 This internal format is slightly different to how it's printed on the game disc (SCES-54749) so text replacement is necessary to match the ID to a game title database later.
 
-_Technically, 16 bytes are reserved for the game ID - though the only ID I've come across that deviates from the typical format is `DVDVIDEO`. It's possible that some applications (such as the obscure [PS2 Linux distribution](https://en.wikipedia.org/wiki/Linux_for_PlayStation_2) and the Japan-exclusive [PSBBN](https://en.wikipedia.org/wiki/PlayStation_Broadband_Navigator)) or even homebrew might make use of IDs in even more formats, but I'm unable to verify personally._
+_Technically, 16 bytes are reserved for the game ID - I've come across some that occupy less than expected, `DVDVIDEO` (integrated DVD player app) and `DTL_S####` (Net Yaroze discs), but only one that occupies more, `PSRM-017100` (allegedly a leaked pre-production serial for Syphon Filter 2 (Disc 2))._
 
 After the game ID, the 17th byte contains a single integer that caps at 63 per-record:
 
@@ -61,6 +61,7 @@ There's some logic that moves entries between `history` and `history.old` but I 
 - **Summary sharing:** Show off your gameplay habits and favourite titles with social media sharing options, in text or image format.
 - **Individual record view:** See source file, dates and play counts for all records processed.
 - **Automatic light and dark mode support:** Please consider checking out the dark mode! It's PS2-themed :)
+- **Raw data view:** View the raw hexadecimal data for each parsed record. Useful for debugging and research.
 - **CSV export**: Utilise your parsed data in other software.
 - **Privacy guaranteed:** All processing happens locally. No files are sent to a server.
 - **File location tutorial:** Learn how to obtain the history file from your own memory card, _or:_

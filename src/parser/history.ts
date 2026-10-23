@@ -7,6 +7,7 @@ export interface PlayHistoryEntry {
   gameFormat: string;
   playCount: number;
   date: Date;
+  rawData: Uint8Array<ArrayBuffer>;
 }
 
 const ENTRY_SIZE = 22;
@@ -15,8 +16,11 @@ function decodeGameId(entry: Uint8Array): string {
   // Extract first 12 bytes of entry as UTF-8. Technically
   // the title field extends to byte 15, but typical game IDs
   // (XXXX_000.00) only require 12 bytes.
+  // (expanded to 13 because Redump says PSRM-017100 exists -
+  // supposedly a pre-production internal serial for Syphon Filter
+  // 2 (Disc 2))
   const decoder = new TextDecoder("utf-8");
-  let gameId = decoder.decode(entry.slice(0, 11));
+  let gameId = decoder.decode(entry.slice(0, 12));
 
   // Convert internal title ID to match format as used on game discs.
   // Also strip unwanted characters, necessary to avoid NULL
@@ -36,7 +40,7 @@ function decodePlayCount(entry: Uint8Array): number {
   return entry[16];
 }
 
-function decodeTimestamp(entry: Uint8Array): Date {
+export function decodeTimestamp(entry: Uint8Array): Date {
   // Some variation of MS-DOS date format - extract bytes 20 and 21 and interpret as date.
   const value = entry[20] | (entry[21] << 8);
 
@@ -75,14 +79,14 @@ export function parseHistory(
     offset + ENTRY_SIZE <= bytes.length;
     offset += ENTRY_SIZE
   ) {
-    const entry = bytes.slice(offset, offset + ENTRY_SIZE);
+    const rawData = bytes.slice(offset, offset + ENTRY_SIZE);
 
-    const gameId = decodeGameId(entry);
+    const gameId = decodeGameId(rawData);
     const gameName =
       gameDatabase.get(gameId)?.gameName ?? `Unknown (${gameId})`;
     const gameFormat = gameDatabase.get(gameId)?.gameFormat ?? "N/A";
-    const playCount = decodePlayCount(entry);
-    const date = decodeTimestamp(entry);
+    const playCount = decodePlayCount(rawData);
+    const date = decodeTimestamp(rawData);
 
     entries.push({
       sourceFile,
@@ -91,8 +95,25 @@ export function parseHistory(
       gameFormat,
       playCount,
       date,
+      rawData,
     });
   }
 
   return entries;
+}
+
+// export function uint8ToBinary(uint8: Uint8Array<ArrayBuffer>): string {
+//   let binaryParts: string[] = new Array(uint8.length);
+
+//   for (let i = 0; i < uint8.length; i++) {
+//     binaryParts[i] = uint8[i].toString(2).padStart(8, "0");
+//   }
+
+//   return binaryParts.join("");
+// }
+
+export function uint8ToHex(uint8: Uint8Array<ArrayBuffer>): string {
+  return Array.from(uint8)
+    .map((i) => i.toString(16).padStart(2, "0"))
+    .join("");
 }
