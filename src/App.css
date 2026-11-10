@@ -143,6 +143,7 @@ input[type="file"] {
 
 .button-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
 }
@@ -234,4 +235,28 @@ input[type="file"] {
 
 .sort-icon-hidden {
   visibility: hidden;
+}
+
+.date-filters {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.date-filters label {
+  gap: 0.35rem;
+}
+
+.date-filters input {
+  border: 1px solid;
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--text);
+  font: inherit;
 }

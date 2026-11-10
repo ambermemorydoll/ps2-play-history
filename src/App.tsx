@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { generateCsv } from "./data/export";
+import { isWithinFilter } from "./data/filter";
 import { createShareSummary, generateShareImage } from "./data/share";
 import {
   createGameSummaries,
@@ -52,6 +53,10 @@ function App() {
   const [shareTab, setShareTab] = useState<number>(0); // Which share tab is in use
   const [shareImagePossible, setShareImagePossible] = useState(false); // Whether the Share Image button should be displayed
   const [shareTextPossible, setShareTextPossible] = useState(false); // Whether the Share Text button should be displayed
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
+  const [filterAllowInvalid, setFilterAllowInvalid] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   async function loadHistoryFiles(files: File[]) {
     setError(null);
@@ -320,14 +325,18 @@ function App() {
   const filteredGames = games.filter((game) => {
     const query = searchQuery.toLowerCase().trim();
 
-    if (!query) {
-      return true;
-    }
-
     return (
-      game.gameName.toLowerCase().includes(query) ||
-      game.gameId.toLowerCase().includes(query) ||
-      game.gameFormat.toLowerCase().includes(query)
+      (query
+        ? game.gameName.toLowerCase().includes(query) ||
+          game.gameId.toLowerCase().includes(query) ||
+          game.gameFormat.toLowerCase().includes(query)
+        : true) &&
+      isWithinFilter(
+        game.lastPlayed,
+        filterStartDate,
+        filterEndDate,
+        filterAllowInvalid,
+      )
     );
   });
 
@@ -446,7 +455,7 @@ function App() {
               <div>
                 {summary.records} records processed{" "}
                 {summary.recordsSkipped > 0
-                  ? `(${summary.recordsSkipped} invalid)`
+                  ? `(${summary.recordsSkipped} empty or invalid)`
                   : ""}
               </div>
               <div>{summary.uniqueGames} unique games played</div>
@@ -485,17 +494,64 @@ function App() {
 
           <div>
             <label htmlFor="game-search">Search games:</label>
-
             <input
               id="game-search"
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Game title or ID"
-            />
+            />{" "}
+            <button type="button" onClick={() => setShowFilters(!showFilters)}>
+              Filters
+            </button>
           </div>
+          {showFilters && (
+            <div>
+              <div className="date-filters">
+                <label>
+                  From:{" "}
+                  <input
+                    type="date"
+                    value={filterStartDate}
+                    max={filterEndDate || undefined}
+                    onChange={(e) => setFilterStartDate(e.target.value)}
+                  />
+                </label>{" "}
+                <label>
+                  To:{" "}
+                  <input
+                    type="date"
+                    value={filterEndDate}
+                    min={filterStartDate || undefined}
+                    onChange={(e) => setFilterEndDate(e.target.value)}
+                  />
+                </label>{" "}
+                <label>
+                  Include games with unknown dates:{" "}
+                  <input
+                    type="checkbox"
+                    checked={filterAllowInvalid}
+                    onChange={(e) => setFilterAllowInvalid(e.target.checked)}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterStartDate("");
+                    setFilterEndDate("");
+                    setFilterAllowInvalid(true);
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          )}
+
+          <br />
+
           <h2>
-            {filteredGames.length} of {games.length} games
+            Showing {filteredGames.length} of {games.length} games
           </h2>
 
           {!selectedGameId && games.length > 0 && (
